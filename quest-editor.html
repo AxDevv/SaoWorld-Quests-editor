@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaoWorld Quest Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
+            --primary-dark: #4f46e5;
+            --primary-light: rgba(99, 102, 241, 0.12);
+            --accent: #f43f5e;
+            --accent-hover: #fb7185;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --bg-input: #334155;
+            --bg-hover: #475569;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --border: #334155;
+            --border-hover: #475569;
+            --success: #10b981;
+            --success-hover: #34d399;
+            --danger: #ef4444;
+            --danger-hover: #f87171;
+            --warning: #f59e0b;
+            --warning-hover: #fbbf24;
+            --info: #0ea5e9;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.5);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.6);
+            --shadow-primary: 0 4px 12px rgba(99, 102, 241, 0.3);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; overflow: hidden; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        .header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; height: 50px; box-shadow: var(--shadow-sm); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; box-shadow: var(--shadow-primary); }
+        .logo h1 { font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, var(--primary-hover), var(--accent-hover)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-actions { display: flex; gap: 0.5rem; }
+
+        .btn { padding: 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-card); color: var(--text); font-weight: 500; }
+        .btn:hover { background: var(--bg-hover); border-color: var(--border-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); box-shadow: var(--shadow-primary); }
+        .btn-success { background: var(--success); border-color: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-hover); box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+        .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4); }
+        .btn-ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+        .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+        .btn-xs { padding: 0.3rem 0.5rem; font-size: 0.75rem; gap: 0.25rem; height: 28px; }
+        .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.8rem; }
+        .btn-square { padding: 0; min-width: 28px; height: 28px; border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; }
+        .btn-icon { padding: 0.3rem; }
+
+        .input-square { width: 55px; text-align: center; }
+        .form-control-xs.input-square { width: 55px; text-align: center; padding: 0.3rem; }
+
+        .main { display: grid; grid-template-columns: 260px 1fr 320px; gap: 1px; background: var(--border); height: calc(100vh - 50px); }
+        .sidebar { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-header { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); }
+        .sidebar-header h2 { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+        .project-toggle { display: flex; background: var(--bg-input); border-radius: var(--radius-md); padding: 2px; }
+        .project-toggle button { padding: 0.35rem 0.6rem; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: var(--radius-sm); font-size: 0.7rem; transition: all 0.2s; }
+        .project-toggle button:hover { color: var(--text); }
+        .project-toggle button.active { background: var(--primary); color: white; }
+        .list-container { flex: 1; overflow-y: auto; padding: 0.5rem; }
+        .list-item { padding: 0.6rem 0.75rem; border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s; margin-bottom: 0.25rem; border: 1px solid transparent; }
+        .list-item:hover { background: var(--bg-card-hover); border-color: var(--border); }
+        .list-item.active { background: var(--primary-light); border-color: var(--primary); }
+        .list-item-name { font-weight: 500; font-size: 0.85rem; }
+        .list-item-id { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+        .editor { background: var(--bg); overflow-y: auto; }
+        .editor-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); position: sticky; top: 0; z-index: 10; }
+        .editor-title { display: flex; align-items: center; gap: 0.75rem; }
+        .editor-title h2 { font-size: 1rem; font-weight: 600; }
+        .editor-content { padding: 1rem; max-width: 850px; margin: 0 auto; }
+
+        .section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.75rem; margin-bottom: 0.75rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .section-title { font-size: 0.85rem; font-weight: 700; color: var(--primary-hover); display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.02em; }
+
+        .form-grid { display: grid; gap: 0.5rem; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.25rem; position: relative; }
+        .form-group label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+        .form-group label .required { color: var(--danger); }
+        .form-group label .optional { color: var(--text-dim); font-size: 0.6rem; }
+
+        .form-control { padding: 0.45rem 0.6rem; background: #1e293b; border: 1px solid var(--border-hover); border-radius: var(--radius-md); color: var(--text); font-size: 0.85rem; transition: all 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--primary); background: #0f172a; box-shadow: 0 0 0 3px var(--primary-light); }
+        .form-control::placeholder { color: var(--text-dim); }
+        .form-control-sm { padding: 0.35rem 0.5rem; font-size: 0.8rem; }
+        .form-control-xs { padding: 0.35rem 0.45rem; font-size: 0.8rem; width: auto !important; min-width: 45px; }
+        .form-group.compact { display: inline-flex; flex-direction: column; width: auto !important; flex: 0 0 auto !important; }
+        .compact-inline { display: inline-flex; gap: 0.35rem; align-items: flex-end; flex-wrap: wrap; }
+
+        textarea.form-control { min-height: 70px; resize: vertical; font-family: 'Consolas', monospace; line-height: 1.4; }
+        select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.6rem center; padding-right: 1.8rem; cursor: pointer; }
+
+        .checkbox-group { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+        .checkbox-group input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+        .checkbox-group label { margin: 0; text-transform: none; color: var(--text); font-size: 0.8rem; font-weight: 500; cursor: pointer; }
+
+        .item-card { background: #252f44; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem; margin-bottom: 0.4rem; transition: all 0.15s; }
+        .item-card:hover { border-color: var(--border-hover); background: #2a364f; }
+        .target-card { min-width: 95px; max-width: 130px; flex: 0 0 auto; background: #1e293b; }
+        .target-card .form-group { gap: 0.1rem; }
+        .target-card .form-group label { font-size: 0.6rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .target-card .form-control { width: 100% !important; padding: 0.2rem 0.3rem; font-size: 0.7rem; background: #0f172a; }
+        .target-card .form-control-xs { width: 100% !important; padding: 0.2rem 0.3rem; font-size: 0.7rem; background: #0f172a; }
+        .target-card .input-square { width: 100% !important; }
+        .multi-target-grid { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: flex-start; }
+
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .item-title { font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; color: var(--text); }
+        .item-type-badge { padding: 0.1rem 0.4rem; border-radius: var(--radius-sm); font-size: 0.6rem; font-weight: 600; background: var(--primary); color: white; }
+
+        .nested-item { background: #1a2332; border-radius: var(--radius-md); padding: 0.4rem; margin-top: 0.4rem; border-left: 2px solid var(--primary); }
+
+        .preview { background: var(--bg); overflow: hidden; display: flex; flex-direction: column; }
+        .preview-header { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); }
+        .preview-header h2 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+        .preview-content { flex: 1; overflow: auto; padding: 0.5rem; }
+        .yaml-output { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.6rem; font-family: 'Consolas', monospace; font-size: 0.7rem; line-height: 1.5; white-space: pre; overflow-x: auto; }
+
+        .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 0.75rem; opacity: 0.4; }
+        .empty-state h3 { font-size: 0.9rem; font-weight: 500; color: var(--text-dim); }
+        .empty-state p { font-size: 0.8rem; margin-top: 0.25rem; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-card); border-radius: var(--radius-lg); max-width: 500px; width: 90%; max-height: 80vh; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-lg); }
+        .modal-header { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 0.95rem; font-weight: 600; }
+        .modal-body { padding: 1.2rem; overflow-y: auto; max-height: 55vh; }
+        .modal-footer { padding: 0.9rem 1.2rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+        .chip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.65rem; background: var(--bg-input); color: var(--text-muted); }
+
+        .tabs-section { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .tab-btn { padding: 0.4rem 0.7rem; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .tab-btn:hover { border-color: var(--border-hover); color: var(--text); }
+        .tab-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.25s ease-out; }
+
+        .autocomplete-list { position: absolute; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); max-height: 180px; overflow-y: auto; z-index: 1000; display: none; box-shadow: var(--shadow-lg); }
+        .autocomplete-item { padding: 0.5rem 0.6rem; cursor: pointer; transition: background 0.15s; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .autocomplete-item:hover { background: var(--bg-hover); }
+        .autocomplete-item-code { font-family: 'Consolas', monospace; color: var(--primary); background: var(--primary-light); padding: 0.1rem 0.3rem; border-radius: var(--radius-sm); font-size: 0.75rem; }
+        .autocomplete-item-desc { color: var(--text-dim); font-size: 0.7rem; }
+
+        .text-muted { color: var(--text-dim); font-size: 0.8rem; }
+
+        .hint { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.15rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">⚔️</div>
+            <h1>SaoWorld Quest Editor</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost" onclick="importFile()">📁 Import</button>
+            <button class="btn btn-success" onclick="exportAll()">💾 Export</button>
+            <button class="btn btn-primary" onclick="createNew()">➕ Nouveau</button>
+        </div>
+    </div>
+    <div class="main">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Projets</h2>
+                <div class="project-toggle">
+                    <button id="tabQuests" class="active" onclick="switchProject('quests')">Quêtes</button>
+                    <button id="tabDialogues" onclick="switchProject('dialogues')">Dialogues</button>
+                </div>
+            </div>
+            <div class="list-container" id="listContainer"></div>
+        </div>
+        <div class="editor" id="editor">
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3>Sélectionnez ou créez un projet</h3>
+                <p>Commencez par créer une nouvelle quête ou importer un fichier existant</p>
+            </div>
+        </div>
+        <div class="preview">
+            <div class="preview-header">
+                <h2>📄 Aperçu YAML</h2>
+                <button class="btn btn-ghost btn-icon" onclick="copyYaml()" title="Copier">📋</button>
+            </div>
+            <div class="preview-content">
+                <div class="yaml-output" id="yamlOutput"></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Importer un fichier</h3>
+                <button class="btn btn-ghost btn-icon" onclick="closeModal('importModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Type de fichier</label>
+                    <select class="form-control" id="importType">
+                        <option value="quest">Quête (.yml)</option>
+                        <option value="dialogue">Dialogue (.yml)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Contenu YAML</label>
+                    <textarea class="form-control" id="importYaml" placeholder="Collez le contenu YAML ici..." rows="8"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('importModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="processImport()">Importer</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="fileInput" accept=".yml,.yaml" style="display:none" onchange="handleFile(event)">
+    <script>
+        const DATA = {
+            objectiveTypes: [
+                { id: 'TALK_NPC', name: 'Parler NPC', icon: '💬', params: ['target'] },
+                { id: 'KILL_MOB', name: 'Tuer Mob', icon: '⚔️', params: ['target'] },
+                { id: 'KILL_MYTHICMOB', name: 'MythicMob', icon: '🐉', params: ['target'] },
+                { id: 'REACH_LOCATION', name: 'Atteindre lieu', icon: '📍', params: ['location', 'radius'] },
+                { id: 'COLLECT_ITEM', name: 'Collecter item', icon: '📦', params: ['itemId', 'amount'] },
+                { id: 'INTERACT_BLOCK', name: 'Interagir bloc', icon: '🔘', params: ['material'] },
+                { id: 'SAOJOBS_COLLECT', name: 'Jobs Récolte', icon: '🌾', params: ['resourceType', 'amount'] },
+                { id: 'CUSTOM', name: 'Personnalisé', icon: '⚙️', params: ['customType'] }
+            ],
+            rewardTypes: [
+                { id: 'COMMAND', name: 'Commande', icon: '💻', params: ['command'] },
+                { id: 'MONEY', name: 'Cols', icon: '💰', params: ['amount'] },
+                { id: 'EXPERIENCE', name: 'XP MC', icon: '✨', params: ['experience'] },
+                { id: 'EXP', name: 'XP Sao', icon: '📊', params: ['experience'] },
+                { id: 'SAOITEMS', name: 'Item Sao', icon: '🗡️', params: ['itemId', 'amount'] },
+                { id: 'GIVE_QUEST', name: 'Donner quête', icon: '📜', params: ['questId'] }
+            ],
+            actionTypes: [
+                { id: 'START_QUEST', name: 'Débuter quête', icon: '🚀', params: ['questId'] },
+                { id: 'COMPLETE_OBJECTIVE', name: 'Compléter objectif', icon: '✅', params: ['questId', 'objectiveId'] },
+                { id: 'COMPLETE_QUEST', name: 'Compléter quête', icon: '🏆', params: ['questId'] },
+                { id: 'EXECUTE_COMMAND', name: 'Exécuter commande', icon: '⌨️', params: ['command', 'asConsole'] },
+                { id: 'SEND_MESSAGE', name: 'Envoyer message', icon: '💬', params: ['message'] },
+                { id: 'OPEN_DIALOGUE', name: 'Ouvrir dialogue', icon: '📖', params: ['dialogueId', 'pageId'] }
+            ],
+            conditionTypes: [
+                { id: 'QUEST_STATE', name: 'État quête', icon: '📜' },
+                { id: 'PLACEHOLDER', name: 'Placeholder', icon: '🔧' },
+                { id: 'PERMISSION', name: 'Permission', icon: '🔑' }
+            ],
+            questStates: [
+                { id: 'NOT_STARTED', name: 'Non commencée' },
+                { id: 'IN_PROGRESS', name: 'En cours' },
+                { id: 'COMPLETED', name: 'Terminée' },
+                { id: 'FAILED', name: 'Échouée' },
+                { id: 'CANCELLED', name: 'Annulée' }
+            ],
+            speakers: ['sao', 'npc', 'player'],
+            categories: ['principale', 'secondaire', 'repeatable', 'event'],
+            placeholders: [
+                { code: '{amount}', desc: 'Quantité requise' },
+                { code: '{current_amount}', desc: 'Quantité actuelle' },
+                { code: '{target}', desc: 'Cible' },
+                { code: '{player}', desc: 'Nom du joueur' },
+                { code: '{quest_name}', desc: 'Nom de la quête' },
+                { code: '{quest_id}', desc: 'ID de la quête' },
+                { code: '{objective_description}', desc: 'Description objectif' },
+                { code: '{objective_id}', desc: 'ID de l\'objectif' },
+                { code: '{remaining}', desc: 'Restant à faire' },
+                { code: '{progress}', desc: 'Progression (5/10)' },
+                { code: '{region}', desc: 'Région' },
+                { code: '{floor}', desc: 'Étage' }
+            ]
+        };
+
+        let projects = { quests: [], dialogues: [] };
+        let currentProject = null;
+        let currentType = 'quests';
+        let currentTab = 'general';
+
+        function init() { loadFromStorage(); renderList(); }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('saoQuestEditor');
+            if (saved) { try { projects = JSON.parse(saved); } catch(e) {} }
+        }
+
+        function saveToStorage() { localStorage.setItem('saoQuestEditor', JSON.stringify(projects)); }
+
+        function renderList() {
+            const container = document.getElementById('listContainer');
+            const list = projects[currentType];
+            if (!list.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><h3>Aucun projet</h3><button class="btn btn-primary" style="margin-top: 0.75rem" onclick="createNew()">➕ Créer</button></div>`;
+                return;
+            }
+            container.innerHTML = list.map((item, i) => `<div class="list-item ${currentProject === item ? 'active' : ''}" onclick="selectProject(${i})"><div class="list-item-name">${item.name || item.id || 'Sans nom'}</div><div class="list-item-id">${item.id || 'pas d\'id'}</div></div>`).join('');
+        }
+
+        function switchProject(type) {
+            currentType = type;
+            currentProject = null;
+            document.getElementById('tabQuests').classList.toggle('active', type === 'quests');
+            document.getElementById('tabDialogues').classList.toggle('active', type === 'dialogues');
+            renderList();
+            showEmptyEditor();
+        }
+
+        function selectProject(index) {
+            currentProject = projects[currentType][index];
+            currentTab = 'general';
+            renderList();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function showEmptyEditor() {
+            document.getElementById('editor').innerHTML = `<div class="empty-state"><div class="empty-state-icon">📝</div><h3>Sélectionnez ou créez un projet</h3><p>Commencez par créer une nouvelle quête ou importer un fichier existant</p></div>`;
+            document.getElementById('yamlOutput').textContent = '';
+        }
+
+        function createNew() {
+            const template = currentType === 'quests' ? createQuestTemplate() : createDialogueTemplate();
+            projects[currentType].push(template);
+            currentProject = template;
+            saveToStorage();
+            renderList();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function createQuestTemplate() {
+            return { id: 'new_quest', name: 'Nouvelle Quête', description: ['Description de la quête'], category: 'principale', autoTrack: true, autoStart: false, repeatable: false, objectives: {}, rewards: {} };
+        }
+
+        function createDialogueTemplate() {
+            return { id: 'new_dialogue', speaker: 'sao', name: 'NPC', saonpcId: 'npc_1', pages: { '1': { texts: ['Bonjour !'], answers: {} } } };
+        }
+
+        function deleteProject() {
+            if (!confirm('Supprimer ce projet ?')) return;
+            const index = projects[currentType].indexOf(currentProject);
+            projects[currentType].splice(index, 1);
+            currentProject = null;
+            saveToStorage();
+            renderList();
+            showEmptyEditor();
+        }
+
+        function renderEditor() { if (!currentProject) return showEmptyEditor(); currentType === 'quests' ? renderQuestEditor() : renderDialogueEditor(); }
+
+        function renderQuestEditor() {
+            const p = currentProject;
+            document.getElementById('editor').innerHTML = `
+                <div class="editor-header animate-in">
+                    <div class="editor-title"><h2>${escapeHtml(p.name)}</h2><span class="chip">${p.category || 'principale'}</span></div>
+                    <button class="btn btn-ghost btn-icon" onclick="deleteProject()">🗑️</button>
+                </div>
+                <div class="editor-content animate-in">
+                    <div class="tabs-section">
+                        <button class="tab-btn ${currentTab === 'general' ? 'active' : ''}" onclick="switchTab('general')">📋 Général</button>
+                        <button class="tab-btn ${currentTab === 'objectives' ? 'active' : ''}" onclick="switchTab('objectives')">🎯 Objectives</button>
+                        <button class="tab-btn ${currentTab === 'rewards' ? 'active' : ''}" onclick="switchTab('rewards')">🎁 Récompenses</button>
+                        <button class="tab-btn ${currentTab === 'requirements' ? 'active' : ''}" onclick="switchTab('requirements')">🔒 Conditions</button>
+                    </div>
+                    ${renderQuestTab()}
+                </div>`;
+        }
+
+        function switchTab(tab) { currentTab = tab; renderEditor(); }
+
+        function renderQuestTab() {
+            switch(currentTab) {
+                case 'general': return renderQuestGeneral();
+                case 'objectives': return renderQuestObjectives();
+                case 'rewards': return renderQuestRewards();
+                case 'requirements': return renderQuestRequirements();
+                default: return renderQuestGeneral();
+            }
+        }
+
+        function renderQuestGeneral() {
+            const p = currentProject;
+            return `
+                <div class="section">
+                    <div class="section-header"><span class="section-title">📋 Informations générales</span></div>
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group"><label>ID <span class="required">*</span></label><input class="form-control form-control-sm" value="${escapeHtml(p.id)}" oninput="updateField('id', this.value)"></div>
+                            <div class="form-group"><label>Nom <span class="required">*</span></label><input class="form-control form-control-sm" value="${escapeHtml(p.name)}" oninput="updateField('name', this.value)"></div>
+                        </div>
+                        <div class="compact-inline">
+                            <div class="form-group compact"><label>Catégorie</label><select class="form-control form-control-xs" oninput="updateField('category', this.value)">${DATA.categories.map(c => `<option value="${c}" ${p.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                            <div class="form-group compact"><label>Niveau</label><input class="form-control form-control-xs input-square" type="number" value="${p.levelRequired || ''}" oninput="updateField('levelRequired', this.value ? parseInt(this.value) : null)" placeholder="1"></div>
+                            <div class="form-group compact"><label>Région</label><input class="form-control form-control-xs" value="${escapeHtml(p.region || '')}" oninput="updateField('region', this.value)" placeholder="Horunka"></div>
+                            <div class="form-group compact"><label>Start NPC</label><input class="form-control form-control-xs" value="${escapeHtml(p.startNpc?.npcId || '')}" oninput="updateNested('startNpc', 'npcId', this.value)" placeholder="npc_id"></div>
+                        </div>
+                        <div class="form-group"><label>Description</label><textarea class="form-control" oninput="updateDescription(this.value)" placeholder="Une ligne par paragraphe">${(p.description || []).join('\n')}</textarea></div>
+                        <div class="compact-inline">
+                            <div class="checkbox-group"><input type="checkbox" id="autoTrack" ${p.autoTrack !== false ? 'checked' : ''} oninput="updateField('autoTrack', this.checked)"><label for="autoTrack">Suivi auto</label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="autoStart" ${p.autoStart ? 'checked' : ''} oninput="updateField('autoStart', this.checked)"><label for="autoStart">Démarrage auto</label></div>
+                            <div class="checkbox-group"><input type="checkbox" id="repeatable" ${p.repeatable ? 'checked' : ''} oninput="updateField('repeatable', this.checked)"><label for="repeatable">Répétable</label></div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderQuestObjectives() {
+            const p = currentProject;
+            const objectives = p.objectives || {};
+            const objEntries = Object.entries(objectives);
+            return `
+                <div class="section">
+                    <div class="section-header"><span class="section-title">🎯 Objectifs</span><button class="btn btn-primary btn-xs" onclick="addObjective()">➕ Ajouter</button></div>
+                    ${objEntries.length === 0 ? '<p class="text-muted" style="padding:0.5rem">Aucun objectif</p>' : ''}
+                    ${objEntries.map(([key, obj]) => renderObjectiveCard(key, obj)).join('')}
+                </div>`;
+        }
+
+        function renderObjectiveCard(key, obj) {
+            const typeInfo = DATA.objectiveTypes.find(t => t.id === obj.type);
+            return `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="item-title"><span class="item-type-badge">${typeInfo?.icon || '🎯'}</span>${escapeHtml(key)}: ${escapeHtml(obj.description || typeInfo?.name || obj.type)}</span>
+                        <button class="btn btn-ghost btn-square" onclick="removeObjective('${key}')">✕</button>
+                    </div>
+                    <div class="compact-inline">
+                        <div class="form-group compact"><label>Type</label><select class="form-control form-control-xs" onchange="updateObjective('${key}', 'type', this.value); renderEditor();">${DATA.objectiveTypes.map(t => `<option value="${t.id}" ${obj.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select></div>
+                        <div class="form-group compact"><label>ID</label><input class="form-control form-control-xs" value="${escapeHtml(obj.id || key)}" oninput="updateObjective('${key}', 'id', this.value)"></div>
+                    </div>
+                    <div class="form-group"><label>Description</label><input class="form-control" value="${escapeHtml(obj.description || '')}" oninput="updateObjective('${key}', 'description', this.value); handleDescriptionInput(event, '${key}', this)" onkeydown="handleDescriptionKeydown(event, '${key}', this)" placeholder="{amount}, {target}..." id="desc-${key}"><div class="autocomplete-list" id="autocomplete-${key}"></div></div>
+                    ${renderObjectiveParams(obj, key)}
+                    ${renderObjectiveInfosToggle(key)}
+                    ${renderObjectiveAnswersToggle(key)}
+                    ${renderObjectiveRewardsToggle(key)}
+                </div>`;
+        }
+
+        function renderObjectiveParams(obj, key) {
+            let html = '<div class="form-grid">';
+            if (obj.targets) {
+                html += `<div class="nested-item"><div class="item-header"><span class="item-title">🎯 Multi-Targets</span><button class="btn btn-ghost btn-square" onclick="disableMultiTargets('${key}')">✕</button></div>`;
+                html += `<div class="multi-target-grid">`;
+                Object.entries(obj.targets).forEach(([tKey, target]) => {
+                    html += `<div class="item-card target-card"><div class="item-header"><span class="item-title">${tKey}</span><button class="btn btn-ghost btn-square" style="width:22px;height:22px;font-size:0.65rem" onclick="removeTarget('${key}', '${tKey}')">✕</button></div>`;
+                    switch(obj.type) {
+                        case 'TALK_NPC': html += renderFormGroup('NPC', 'target', target.target || '', key, tKey); break;
+                        case 'KILL_MOB':
+                        case 'KILL_MYTHICMOB': html += renderFormGroup('Mob', 'target', target.target || '', key, tKey); break;
+                        case 'COLLECT_ITEM': html += renderFormGroup('Item', 'itemId', target.itemId || '', key, tKey); break;
+                        case 'SAOJOBS_COLLECT': html += renderFormGroup('Res', 'resourceType', target.resourceType || '', key, tKey); break;
+                    }
+                    html += renderFormGroupNumber('Qty', 'amount', target.amount || 1, key, tKey);
+                    html += '</div>';
+                });
+                html += `</div>`;
+                html += `<button class="btn btn-xs" onclick="addTarget('${key}')">➕</button></div>`;
+            } else {
+                switch(obj.type) {
+                    case 'TALK_NPC': html += renderFormGroup('NPC ID', 'target', obj.target || '', key); break;
+                    case 'KILL_MOB': html += `<div class="compact-inline">${renderFormGroup('Mob Type', 'target', obj.target || '', key)}${renderFormGroupNumber('Qty', 'amount', obj.amount || 1, key)}</div>`; break;
+                    case 'KILL_MYTHICMOB': html += `<div class="compact-inline">${renderFormGroup('MythicMob ID', 'target', obj.target || '', key)}${renderFormGroupNumber('Qty', 'amount', obj.amount || 1, key)}</div>`; break;
+                    case 'REACH_LOCATION': html += `<div class="compact-inline" style="flex-wrap:wrap"><div class="form-group compact"><label>World</label><input class="form-control form-control-xs" style="min-width:70px" value="${obj.location?.world || ''}" oninput="updateNestedObjective('${key}', 'location', 'world', this.value)"></div><div class="form-group compact"><label>X</label><input class="form-control form-control-xs input-square" type="number" step="1" value="${obj.location?.x || ''}" oninput="updateNestedObjective('${key}', 'location', 'x', parseFloat(this.value))"></div><div class="form-group compact"><label>Y</label><input class="form-control form-control-xs input-square" type="number" step="1" value="${obj.location?.y || ''}" oninput="updateNestedObjective('${key}', 'location', 'y', parseFloat(this.value))"></div><div class="form-group compact"><label>Z</label><input class="form-control form-control-xs input-square" type="number" step="1" value="${obj.location?.z || ''}" oninput="updateNestedObjective('${key}', 'location', 'z', parseFloat(this.value))"></div></div>`; html += renderFormGroupNumber('Radius', 'radius', obj.radius || 5, key); break;
+                    case 'COLLECT_ITEM': html += `<div class="compact-inline">${renderFormGroup('Item ID', 'itemId', obj.itemId || '', key)}${renderFormGroupNumber('Qty', 'amount', obj.amount || 1, key)}</div>`; break;
+                    case 'SAOJOBS_COLLECT': html += `<div class="compact-inline">${renderFormGroup('Resource', 'resourceType', obj.resourceType || '', key)}${renderFormGroupNumber('Qty', 'amount', obj.amount || 1, key)}</div>`; break;
+                    case 'INTERACT_BLOCK': html += renderFormGroup('Material', 'material', obj.material || '', key); if (obj.location) { html += `<div class="compact-inline" style="margin-top:0.25rem"><div class="form-group compact"><label>X</label><input class="form-control form-control-xs" type="number" value="${obj.location.x || ''}" oninput="updateNestedObjective('${key}', 'location', 'x', parseFloat(this.value))"></div><div class="form-group compact"><label>Y</label><input class="form-control form-control-xs" type="number" value="${obj.location.y || ''}" oninput="updateNestedObjective('${key}', 'location', 'y', parseFloat(this.value))"></div><div class="form-group compact"><label>Z</label><input class="form-control form-control-xs" type="number" value="${obj.location.z || ''}" oninput="updateNestedObjective('${key}', 'location', 'z', parseFloat(this.value))"></div></div>`; } break;
+                    case 'CUSTOM': html += renderFormGroup('Custom Type', 'customType', obj.customType || '', key); break;
+                }
+                if (['TALK_NPC', 'KILL_MOB', 'KILL_MYTHICMOB', 'COLLECT_ITEM', 'SAOJOBS_COLLECT'].includes(obj.type)) { html += `<button class="btn btn-xs btn-ghost" style="margin-top: 0.4rem" onclick="enableMultiTargets('${key}')">🎯 Multi-targets</button>`; }
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function renderFormGroup(label, field, value, objKey, targetKey = null) {
+            if (targetKey) { return `<div class="form-group compact"><label>${label}</label><input class="form-control form-control-xs" value="${escapeHtml(String(value))}" oninput="updateTarget('${objKey}', '${targetKey}', '${field}', this.value)"></div>`; }
+            if (objKey === 'requirements') { return `<div class="form-group compact"><label>${label}</label><input class="form-control form-control-xs" value="${escapeHtml(String(value))}" oninput="updateField('${field}', this.value)"></div>`; }
+            return `<div class="form-group compact"><label>${label}</label><input class="form-control form-control-xs" value="${escapeHtml(String(value))}" oninput="updateObjective('${objKey}', '${field}', this.value)"></div>`;
+        }
+
+        function renderFormGroupNumber(label, field, value, objKey, targetKey = null) {
+            if (targetKey) { return `<div class="form-group compact"><label>${label}</label><input class="form-control form-control-xs input-square" type="number" value="${value}" oninput="updateTarget('${objKey}', '${targetKey}', '${field}', parseInt(this.value))"></div>`; }
+            return `<div class="form-group compact"><label>${label}</label><input class="form-control form-control-xs input-square" type="number" value="${value}" oninput="updateObjective('${objKey}', '${field}', parseInt(this.value))"></div>`;
+        }
+
+        function renderObjectiveInfosToggle(key) {
+            const obj = currentProject.objectives[key];
+            const hasInfos = obj.informations;
+            return `
+                <div class="checkbox-group" style="margin-top:0.3rem">
+                    <input type="checkbox" id="showInfos-${key}" ${hasInfos ? 'checked' : ''} onchange="toggleInfos('${key}', this.checked)">
+                    <label for="showInfos-${key}" style="font-size:0.7rem">📍 Infos (region, floor)</label>
+                </div>
+                ${hasInfos ? `<div id="infosContainer-${key}">${renderObjectiveInformations(obj.informations, key)}</div>` : ''}
+            `;
+        }
+
+        function toggleInfos(key, show) {
+            if (show) {
+                if (!currentProject.objectives[key].informations) {
+                    currentProject.objectives[key].informations = { region: '', floor: 1 };
+                }
+                saveToStorage();
+                renderEditor();
+            } else {
+                delete currentProject.objectives[key].informations;
+                saveToStorage();
+                renderEditor();
+            }
+        }
+
+        function renderObjectiveAnswersToggle(key) {
+            const obj = currentProject.objectives[key];
+            const hasAnswers = obj.answers;
+            return `
+                <div class="checkbox-group" style="margin-top:0.3rem">
+                    <input type="checkbox" id="showAnswers-${key}" ${hasAnswers ? 'checked' : ''} onchange="toggleAnswers('${key}', this.checked)">
+                    <label for="showAnswers-${key}" style="font-size:0.7rem">💬 Réponses NPC</label>
+                </div>
+                ${hasAnswers ? `<div id="answersContainer-${key}">${renderObjectiveAnswers(obj.answers, key)}</div>` : ''}
+            `;
+        }
+
+        function toggleAnswers(key, show) {
+            if (show) {
+                if (!currentProject.objectives[key].answers) {
+                    currentProject.objectives[key].answers = {};
+                }
+                saveToStorage();
+                renderEditor();
+            } else {
+                delete currentProject.objectives[key].answers;
+                saveToStorage();
+                renderEditor();
+            }
+        }
+
+        function renderObjectiveRewardsToggle(key) {
+            const obj = currentProject.objectives[key];
+            const hasRewards = obj.rewards;
+            return `
+                <div class="checkbox-group" style="margin-top:0.3rem">
+                    <input type="checkbox" id="showRewards-${key}" ${hasRewards ? 'checked' : ''} onchange="toggleObjectiveRewards('${key}', this.checked)">
+                    <label for="showRewards-${key}" style="font-size:0.7rem">🎁 Récompenses</label>
+                </div>
+                ${hasRewards ? `<div id="rewardsContainer-${key}">${renderObjectiveRewards(obj.rewards, key)}</div>` : ''}
+            `;
+        }
+
+        function toggleObjectiveRewards(key, show) {
+            if (show) {
+                if (!currentProject.objectives[key].rewards) {
+                    currentProject.objectives[key].rewards = {};
+                }
+                addObjectiveReward(key);
+            } else {
+                delete currentProject.objectives[key].rewards;
+                saveToStorage();
+                renderEditor();
+                updateYamlPreview();
+            }
+        }
+
+        function renderObjectiveRewards(rewards, key) {
+            const rewardEntries = Object.entries(rewards);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">🎁 Récompenses</span><button class="btn btn-xs" onclick="addObjectiveReward('${key}')">➕</button></div>
+                    ${rewardEntries.map(([rKey, reward]) => {
+                        const typeInfo = DATA.rewardTypes.find(t => t.id === reward.type);
+                        return `
+                            <div class="item-card" style="padding: 0.4rem; margin-bottom: 0.2rem">
+                                <div class="item-header">
+                                    <span class="item-title"><span class="item-type-badge">${typeInfo?.icon || '🎁'}</span>${typeInfo?.name || reward.type}</span>
+                                    <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeObjectiveReward('${key}', '${rKey}')">✕</button>
+                                </div>
+                                <select class="form-control form-control-xs" style="margin-bottom:0.3rem" onchange="updateObjectiveReward('${key}', '${rKey}', 'type', this.value); renderEditor();">${DATA.rewardTypes.map(t => `<option value="${t.id}" ${reward.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                ${renderObjectiveRewardParams(reward, key, rKey)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderObjectiveRewardParams(reward, objKey, rKey) {
+            switch(reward.type) {
+                case 'COMMAND': return `<input class="form-control form-control-xs" value="${escapeHtml(reward.command || '')}" oninput="updateObjectiveReward('${objKey}', '${rKey}', 'command', this.value)" placeholder="Commande (%player%)">`;
+                case 'MONEY':
+                case 'EXPERIENCE':
+                case 'EXP': return `<input class="form-control form-control-xs" type="number" value="${reward.amount || reward.experience || 0}" oninput="updateObjectiveReward('${objKey}', '${rKey}', 'amount', parseInt(this.value))" placeholder="Montant">`;
+                case 'SAOITEMS': return `<input class="form-control form-control-xs" value="${escapeHtml(reward.target || reward.itemId || '')}" oninput="updateObjectiveReward('${objKey}', '${rKey}', 'target', this.value)" placeholder="Item ID (ex: ressources;gland)"><input class="form-control form-control-xs input-square" type="number" value="${reward.amount || 1}" oninput="updateObjectiveReward('${objKey}', '${rKey}', 'amount', parseInt(this.value))" placeholder="Qty">`;
+                case 'GIVE_QUEST': return `<input class="form-control form-control-xs" value="${escapeHtml(reward.target || reward.questId || '')}" oninput="updateObjectiveReward('${objKey}', '${rKey}', 'target', this.value)" placeholder="Quest ID">`;
+                default: return '';
+            }
+        }
+
+        function addObjectiveReward(objKey) {
+            const rewards = currentProject.objectives[objKey].rewards || {};
+            const nextKey = Object.keys(rewards).length + 1;
+            if (!currentProject.objectives[objKey].rewards) currentProject.objectives[objKey].rewards = {};
+            currentProject.objectives[objKey].rewards[nextKey] = { type: 'MONEY', amount: 100 };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateObjectiveReward(objKey, rKey, field, value) {
+            currentProject.objectives[objKey].rewards[rKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeObjectiveReward(objKey, rKey) {
+            delete currentProject.objectives[objKey].rewards[rKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderAnswerActionsToggle(objKey, ansKey) {
+            const ans = currentProject.objectives[objKey].answers[ansKey];
+            const hasActions = ans.actions;
+            return `
+                <div class="checkbox-group" style="margin-top:0.3rem">
+                    <input type="checkbox" id="showActions-${objKey}-${ansKey}" ${hasActions ? 'checked' : ''} onchange="toggleAnswerActions('${objKey}', '${ansKey}', this.checked)">
+                    <label for="showActions-${objKey}-${ansKey}" style="font-size:0.7rem">⚡ Actions</label>
+                </div>
+                ${hasActions ? `<div id="actionsContainer-${objKey}-${ansKey}">${renderAnswerActions(ans.actions, objKey, ansKey)}</div>` : ''}
+            `;
+        }
+
+        function toggleAnswerActions(objKey, ansKey, show) {
+            if (show) {
+                if (!currentProject.objectives[objKey].answers[ansKey].actions) {
+                    currentProject.objectives[objKey].answers[ansKey].actions = {};
+                }
+                saveToStorage();
+                renderEditor();
+            } else {
+                delete currentProject.objectives[objKey].answers[ansKey].actions;
+                saveToStorage();
+                renderEditor();
+            }
+        }
+
+        function renderNestedDialogueToggle(objKey, ansKey) {
+            const ans = currentProject.objectives[objKey].answers[ansKey];
+            const hasDialogue = ans.dialogue;
+            return `
+                <div class="checkbox-group" style="margin-top:0.3rem">
+                    <input type="checkbox" id="showDialogue-${objKey}-${ansKey}" ${hasDialogue ? 'checked' : ''} onchange="toggleNestedDialogue('${objKey}', '${ansKey}', this.checked)">
+                    <label for="showDialogue-${objKey}-${ansKey}" style="font-size:0.7rem">🎭 Dialogue imbriqué</label>
+                </div>
+                ${hasDialogue ? `<div id="dialogueContainer-${objKey}-${ansKey}">${renderNestedDialogue(ans.dialogue, objKey, ansKey)}</div>` : ''}
+            `;
+        }
+
+        function toggleNestedDialogue(objKey, ansKey, show) {
+            if (show) {
+                if (!currentProject.objectives[objKey].answers[ansKey].dialogue) {
+                    currentProject.objectives[objKey].answers[ansKey].dialogue = {
+                        speaker: 'sao',
+                        pages: { '1': { texts: ['Texte de la page'], answers: {} } }
+                    };
+                }
+                saveToStorage();
+                renderEditor();
+            } else {
+                delete currentProject.objectives[objKey].answers[ansKey].dialogue;
+                saveToStorage();
+                renderEditor();
+            }
+        }
+
+        function renderObjectiveInformations(info, key) {
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">📍 Informations</span><button class="btn btn-ghost btn-square" onclick="removeInformations('${key}')">✕</button></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Région</label><input class="form-control form-control-sm" value="${escapeHtml(info.region || '')}" oninput="updateNestedObjective('${key}', 'informations', 'region', this.value)"></div>
+                        <div class="form-group"><label>Étage</label><input class="form-control form-control-sm" type="number" value="${info.floor || ''}" oninput="updateNestedObjective('${key}', 'informations', 'floor', parseInt(this.value))"></div>
+                    </div>
+                </div>`;
+        }
+
+        function renderObjectiveAnswers(answers, key) {
+            const answerEntries = Object.entries(answers);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">💬 Réponses NPC</span><button class="btn btn-xs" onclick="addObjectiveAnswer('${key}')">➕</button></div>
+                    ${answerEntries.map(([ansKey, ans]) => `
+                        <div class="item-card" style="margin-bottom: 0.4rem">
+                            <div class="item-header">
+                                <input class="form-control form-control-sm" value="${escapeHtml(ans.text || '')}" oninput="updateObjectiveAnswer('${key}', '${ansKey}', 'text', this.value)" placeholder="Texte" style="flex:1">
+                                <div style="display:flex;gap:0.3rem">
+                                    ${ans.accept ? `<span class="chip">✓ Accept</span>` : ''}
+                                    ${ans.next ? `<span class="chip">→ Next</span>` : ''}
+                                    ${ans.conditions && Object.keys(ans.conditions).length ? `<span class="chip">🔒 ${Object.keys(ans.conditions).length}</span>` : ''}
+                                    <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeObjectiveAnswer('${key}', '${ansKey}')">✕</button>
+                                </div>
+                            </div>
+                            <div class="compact-inline" style="margin-bottom:0.5rem">
+                                <button class="btn btn-xs ${ans.accept ? 'btn-danger' : 'btn-ghost'}" onclick="toggleAnswerOption('${key}', '${ansKey}', 'accept', ${ans.accept === undefined})">${ans.accept ? '✕ Accept' : '➕ Accept'}</button>
+                                <button class="btn btn-xs ${ans.next ? 'btn-danger' : 'btn-ghost'}" onclick="toggleAnswerOption('${key}', '${ansKey}', 'next', ${ans.next === undefined})">${ans.next ? '✕ Next' : '➕ Next'}</button>
+                                <button class="btn btn-xs btn-ghost" onclick="toggleObjectiveAnswerConditions('${key}', '${ansKey}')">${ans.conditions ? '🔒 Conditions' : '➕ Conditions'}</button>
+                            </div>
+                            ${ans.conditions ? renderAnswerConditions(ans.conditions, '${key}', '${ansKey}', '', '', 'objective') : ''}
+                            ${renderNestedDialogueToggle(key, ansKey)}
+                            ${renderAnswerActionsToggle(key, ansKey)}
+                        </div>
+                    `).join('')}
+                </div>`;
+        }
+
+        function toggleObjectiveAnswerConditions(objKey, ansKey) {
+            const answer = currentProject.objectives[objKey].answers[ansKey];
+            if (answer.conditions) {
+                delete answer.conditions;
+            } else {
+                answer.conditions = {};
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderNestedDialogue(dialogue, objKey, ansKey) {
+            const pages = dialogue.pages || {};
+            return `
+                <div class="nested-item">
+                    <div class="item-header">
+                        <span class="item-title">🎭 Dialogue Imbriqué</span>
+                        <div>
+                            <select class="form-control form-control-xs" style="display:inline-block;width:auto" oninput="updateNestedDialogue('${objKey}', '${ansKey}', 'speaker', this.value)">${DATA.speakers.map(s => `<option value="${s}" ${dialogue.speaker === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                            <button class="btn btn-ghost btn-square" onclick="removeNestedDialogue('${objKey}', '${ansKey}')">✕</button>
+                        </div>
+                    </div>
+                    ${Object.entries(pages).map(([pageKey, page]) => `
+                        <div class="item-card" style="margin-bottom: 0.4rem">
+                            <div class="item-header"><span class="item-title">Page ${pageKey}</span><button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeDialoguePage('${objKey}', '${ansKey}', '${pageKey}')">✕</button></div>
+                            <div class="form-group"><label>Textes</label><textarea class="form-control form-control-sm" rows="2" oninput="updateDialoguePageTexts('${objKey}', '${ansKey}', '${pageKey}', this.value)">${(page.texts || []).join('\n')}</textarea></div>
+                            ${renderDialoguePageAnswers(page, pageKey, objKey, ansKey)}
+                        </div>
+                    `).join('')}
+                    <button class="btn btn-xs btn-ghost" onclick="addDialoguePage('${objKey}', '${ansKey}')">➕ Page</button>
+                </div>`;
+        }
+
+        function renderDialoguePageAnswers(page, pageKey, objKey, ansKey) {
+            const answers = page.answers || {};
+            const ansEntries = Object.entries(answers);
+            return `
+                <div class="form-group" style="margin-top: 0.4rem">
+                    <label>Réponses</label>
+                    ${ansEntries.map(([aKey, a]) => `
+                        <div class="item-card" style="padding: 0.4rem; margin-bottom: 0.2rem">
+                            <div class="compact-inline">
+                                <input class="form-control form-control-xs" value="${escapeHtml(a.text || '')}" oninput="updatePageAnswer('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'text', this.value)" placeholder="Texte" style="flex:1">
+                                ${a.goto !== undefined ? `<input class="form-control form-control-xs" value="${escapeHtml(a.goto)}" oninput="updatePageAnswer('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'goto', this.value)" placeholder="Aller à">` : ''}
+                                ${a.accept ? `<span class="chip">✓ Accept</span>` : ''}
+                                ${a.next ? `<span class="chip">→ Next</span>` : ''}
+                                ${a.conditions && Object.keys(a.conditions).length ? `<span class="chip">🔒 ${Object.keys(a.conditions).length}</span>` : ''}
+                                <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removePageAnswer('${objKey}', '${ansKey}', '${pageKey}', '${aKey}')">✕</button>
+                            </div>
+                            <div class="compact-inline" style="margin-top:0.2rem">
+                                <button class="btn btn-xs ${a.goto !== undefined ? 'btn-danger' : 'btn-ghost'}" onclick="togglePageAnswerOption('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'goto', ${a.goto === undefined})">${a.goto === undefined ? '➕ Goto' : '✕ Goto'}</button>
+                                <button class="btn btn-xs ${a.accept ? 'btn-danger' : 'btn-ghost'}" onclick="togglePageAnswerOption('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'accept', ${a.accept === undefined})">${a.accept ? '✕ Accept' : '➕ Accept'}</button>
+                                <button class="btn btn-xs ${a.next ? 'btn-danger' : 'btn-ghost'}" onclick="togglePageAnswerOption('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'next', ${a.next === undefined})">${a.next ? '✕ Next' : '➕ Next'}</button>
+                                <button class="btn btn-xs btn-ghost" onclick="togglePageAnswerConditions('${objKey}', '${ansKey}', '${pageKey}', '${aKey}')">${a.conditions ? '🔒 Conditions' : '➕ Conditions'}</button>
+                            </div>
+                            ${a.conditions ? renderAnswerConditions(a.conditions, '${objKey}', '${ansKey}', '${pageKey}', '${aKey}', 'page') : ''}
+                        </div>
+                    `).join('')}
+                    <button class="btn btn-xs btn-ghost" onclick="addPageAnswer('${objKey}', '${ansKey}', '${pageKey}')">➕ Réponse</button>
+                </div>`;
+        }
+
+        function togglePageAnswerOption(objKey, ansKey, pageKey, aKey, option, add) {
+            if (add) {
+                currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey][option] = true;
+            } else {
+                delete currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey][option];
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function togglePageAnswerConditions(objKey, ansKey, pageKey, aKey) {
+            const answer = currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey];
+            if (answer.conditions) {
+                delete answer.conditions;
+            } else {
+                answer.conditions = {};
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderAnswerConditions(conditions, objKey, ansKey, pageKey, aKey, type) {
+            const condEntries = Object.entries(conditions);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">🔒 Conditions</span><button class="btn btn-xs" onclick="addAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${type}')">➕</button></div>
+                    ${condEntries.map(([cKey, cond]) => {
+                        const typeInfo = DATA.conditionTypes.find(t => t.id === cond.type);
+                        return `
+                            <div class="item-card" style="padding: 0.3rem; margin-bottom: 0.2rem">
+                                <div class="compact-inline">
+                                    <span class="item-type-badge">${typeInfo?.icon || '🔒'}</span>
+                                    <select class="form-control form-control-xs" onchange="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'type', this.value); renderEditor();">${DATA.conditionTypes.map(t => `<option value="${t.id}" ${cond.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                    <button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}')">✕</button>
+                                </div>
+                                ${renderConditionParams(cond, objKey, ansKey, pageKey, aKey, cKey, type)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderConditionParams(cond, objKey, ansKey, pageKey, aKey, cKey, type) {
+            switch(cond.type) {
+                case 'QUEST_STATE':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.questId || '')}" oninput="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'questId', this.value)" placeholder="Quest ID">
+                            <select class="form-control form-control-xs" onchange="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'questState', this.value)">${DATA.questStates.map(s => `<option value="${s.id}" ${cond.questState === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}</select>
+                        </div>`;
+                case 'PLACEHOLDER':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.placeholder || '')}" oninput="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'placeholder', this.value)" placeholder="Placeholder">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.value || '')}" oninput="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'value', this.value)" placeholder="Valeur">
+                        </div>`;
+                case 'PERMISSION':
+                    return `<input class="form-control form-control-xs" style="margin-top:0.2rem" value="${escapeHtml(cond.permission || '')}" oninput="updateAnswerCondition('${objKey}', '${ansKey}', '${pageKey}', '${aKey}', '${cKey}', '${type}', 'permission', this.value)" placeholder="Permission (ex: ma.permission)">`;
+                default:
+                    return '';
+            }
+        }
+
+        function addAnswerCondition(objKey, ansKey, pageKey, aKey, type) {
+            const answer = type === 'page'
+                ? currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey]
+                : type === 'objective'
+                    ? currentProject.objectives[objKey].answers[ansKey]
+                    : currentProject.objectives[objKey].answers[ansKey][aKey];
+            if (!answer.conditions) answer.conditions = {};
+            const nextKey = Object.keys(answer.conditions).length + 1;
+            answer.conditions[nextKey] = { type: 'QUEST_STATE', questId: '', questState: 'COMPLETED' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateAnswerCondition(objKey, ansKey, pageKey, aKey, cKey, type, field, value) {
+            const answer = type === 'page'
+                ? currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey]
+                : type === 'objective'
+                    ? currentProject.objectives[objKey].answers[ansKey]
+                    : currentProject.objectives[objKey].answers[ansKey][aKey];
+            answer.conditions[cKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeAnswerCondition(objKey, ansKey, pageKey, aKey, cKey, type) {
+            const answer = type === 'page'
+                ? currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey]
+                : type === 'objective'
+                    ? currentProject.objectives[objKey].answers[ansKey]
+                    : currentProject.objectives[objKey].answers[ansKey][aKey];
+            delete answer.conditions[cKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderAnswerActions(actions, objKey, ansKey) {
+            const actEntries = Object.entries(actions);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">⚡ Actions</span><button class="btn btn-xs" onclick="addAnswerAction('${objKey}', '${ansKey}')">➕</button></div>
+                    ${actEntries.map(([actKey, action]) => `
+                        <div class="item-card" style="padding: 0.4rem; margin-bottom: 0.2rem">
+                            <div class="compact-inline">
+                                <select class="form-control form-control-xs" onchange="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'type', this.value)">${DATA.actionTypes.map(t => `<option value="${t.id}" ${action.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                ${renderActionParams(action, objKey, ansKey, actKey)}
+                                <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeAnswerAction('${objKey}', '${ansKey}', '${actKey}')">✕</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+        }
+
+        function renderActionParams(action, objKey, ansKey, actKey) {
+            switch(action.type) {
+                case 'EXECUTE_COMMAND': return `<input class="form-control form-control-xs" value="${escapeHtml(action.command || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'command', this.value)" placeholder="Commande (%player%)"><label class="checkbox-group"><input type="checkbox" ${action.asConsole !== false ? 'checked' : ''} oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'asConsole', this.checked)">Console</label>`;
+                case 'SEND_MESSAGE': return `<input class="form-control form-control-xs" value="${escapeHtml(action.message || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'message', this.value)" placeholder="Message">`;
+                case 'START_QUEST':
+                case 'COMPLETE_QUEST': return `<input class="form-control form-control-xs" value="${escapeHtml(action.questId || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'questId', this.value)" placeholder="Quest ID">`;
+                case 'COMPLETE_OBJECTIVE': return `<input class="form-control form-control-xs" value="${escapeHtml(action.questId || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'questId', this.value)" placeholder="Quest ID"><input class="form-control form-control-xs" value="${escapeHtml(action.objectiveId || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'objectiveId', this.value)" placeholder="Obj ID">`;
+                case 'OPEN_DIALOGUE': return `<input class="form-control form-control-xs" value="${escapeHtml(action.dialogueId || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'dialogueId', this.value)" placeholder="Dialogue ID"><input class="form-control form-control-xs" value="${escapeHtml(action.pageId || '')}" oninput="updateAnswerAction('${objKey}', '${ansKey}', '${actKey}', 'pageId', this.value)" placeholder="Page ID">`;
+                default: return '';
+            }
+        }
+
+        function renderQuestRewards() {
+            const p = currentProject;
+            const rewards = p.rewards || {};
+            const rewardEntries = Object.entries(rewards);
+            return `
+                <div class="section">
+                    <div class="section-header"><span class="section-title">🎁 Récompenses</span><button class="btn btn-primary btn-xs" onclick="addReward()">➕ Ajouter</button></div>
+                    ${rewardEntries.length === 0 ? '<p class="text-muted" style="padding:0.5rem">Aucune récompense</p>' : ''}
+                    ${rewardEntries.map(([key, reward]) => {
+                        const typeInfo = DATA.rewardTypes.find(t => t.id === reward.type);
+                        return `
+                            <div class="item-card">
+                                <div class="item-header"><span class="item-title"><span class="item-type-badge">${typeInfo?.icon || '🎁'}</span>${typeInfo?.name || reward.type}</span><button class="btn btn-ghost btn-square" onclick="removeReward('${key}')">✕</button></div>
+                                <div class="form-group"><label>Type</label><select class="form-control form-control-xs" onchange="updateReward('${key}', 'type', this.value); renderEditor();">${DATA.rewardTypes.map(t => `<option value="${t.id}" ${reward.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select></div>
+                                ${renderRewardParams(reward, key)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderRewardParams(reward, key) {
+            switch(reward.type) {
+                case 'COMMAND': return `<div class="form-group"><label>Commande (%player%)</label><input class="form-control form-control-sm" value="${escapeHtml(reward.command || '')}" oninput="updateReward('${key}', 'command', this.value)"></div>`;
+                case 'MONEY':
+                case 'EXPERIENCE':
+                case 'EXP': return `<div class="form-group"><label>Montant</label><input class="form-control form-control-xs" type="number" value="${reward.amount || reward.experience || 0}" oninput="updateReward('${key}', 'amount', parseInt(this.value))"></div>`;
+                case 'SAOITEMS': return `<div class="compact-inline">${renderFormGroup('Item ID', 'target', reward.target || reward.itemId || '', key)}${renderFormGroupNumber('Qty', 'amount', reward.amount || 1, key)}</div>`;
+                case 'GIVE_QUEST': return `<div class="form-group"><label>Quest ID</label><input class="form-control form-control-xs" value="${escapeHtml(reward.target || reward.questId || '')}" oninput="updateReward('${key}', 'target', this.value)"></div>`;
+                default: return '';
+            }
+        }
+
+        function renderQuestRequirements() {
+            const p = currentProject;
+            const reqs = p.requirements || {};
+            const levelValue = reqs.mmocore_level || reqs.mmocoreLevel || reqs.saocore_level || reqs.saoCoreLevel || '';
+            return `
+                <div class="section">
+                    <div class="section-header"><span class="section-title">🔒 Conditions de démarrage</span></div>
+                    <div class="form-grid">
+                        <div class="compact-inline">
+                            <div class="form-group compact"><label>Niveau Sao/MMO</label><input class="form-control form-control-xs input-square" type="number" value="${levelValue}" oninput="updateRequirementsLevel(this.value)" placeholder="1"></div>
+                        </div>
+                        <div class="form-group"><label>Quêtes requises</label><input class="form-control" value="${(reqs.quests || []).join(', ')}" oninput="updateRequirementsArray('quests', this.value)" placeholder="séparées par virgule"></div>
+                        <div class="form-group"><label>Permissions requises</label><input class="form-control" value="${(reqs.permissions || []).join(', ')}" oninput="updateRequirementsArray('permissions', this.value)" placeholder="séparées par virgule"></div>
+                    </div>
+                </div>
+                ${p.startNpc ? `
+                    <div class="section">
+                        <div class="section-header"><span class="item-title">👤 Start NPC</span><button class="btn btn-ghost btn-xs" onclick="removeStartNpc()">Supprimer</button></div>
+                        <div class="compact-inline">
+                            <div class="form-group compact"><label>NPC ID</label><input class="form-control form-control-xs" value="${escapeHtml(p.startNpc.npcId || '')}" oninput="updateNested('startNpc', 'npcId', this.value)"></div>
+                            <div class="checkbox-group" style="margin-top:0.4rem"><input type="checkbox" id="startNpcEnable" ${p.startNpc.enable !== false ? 'checked' : ''} oninput="updateNested('startNpc', 'enable', this.checked)"><label for="startNpcEnable">Activer</label></div>
+                        </div>
+                        ${p.startNpc.answers ? renderStartNpcAnswers(p.startNpc.answers) : ''}
+                        <button class="btn btn-xs" style="margin-top: 0.4rem" onclick="addStartNpcAnswer()">➕ Réponse</button>
+                    </div>` : `<button class="btn btn-ghost btn-xs" onclick="addStartNpc()">➕ Ajouter Start NPC</button>`}`;
+        }
+
+        function renderStartNpcAnswers(answers) {
+            const entries = Object.entries(answers);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">Réponses</span></div>
+                    ${entries.map(([key, ans]) => `
+                        <div class="item-card" style="padding: 0.4rem; margin-bottom: 0.2rem">
+                            <div class="item-header">
+                                <input class="form-control form-control-sm" value="${escapeHtml(ans.text || '')}" oninput="updateStartNpcAnswer('${key}', 'text', this.value)" placeholder="Texte" style="flex:1">
+                                <div style="display:flex;gap:0.3rem;align-items:center">
+                                    ${ans.accept ? `<span class="chip">✓ Accept</span>` : ''}
+                                    ${ans.next ? `<span class="chip">→ Next</span>` : ''}
+                                    ${ans.conditions && Object.keys(ans.conditions).length ? `<span class="chip">🔒 ${Object.keys(ans.conditions).length}</span>` : ''}
+                                    <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeStartNpcAnswer('${key}')">✕</button>
+                                </div>
+                            </div>
+                            <div class="compact-inline" style="margin-bottom:0.3rem">
+                                <button class="btn btn-xs ${ans.accept ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcAnswerOption('${key}', 'accept', ${ans.accept === undefined})">${ans.accept ? '✕ Accept' : '➕ Accept'}</button>
+                                <button class="btn btn-xs ${ans.next ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcAnswerOption('${key}', 'next', ${ans.next === undefined})">${ans.next ? '✕ Next' : '➕ Next'}</button>
+                                <button class="btn btn-xs ${ans.dialogue ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcDialogue('${key}')">${ans.dialogue ? '✕ Dialogue' : '➕ Dialogue'}</button>
+                                <button class="btn btn-xs btn-ghost" onclick="toggleStartNpcAnswerConditions('${key}')">${ans.conditions ? '🔒 Conditions' : '➕ Conditions'}</button>
+                            </div>
+                            ${ans.conditions ? renderStartNpcAnswerConditions(ans.conditions, '${key}') : ''}
+                            ${ans.dialogue ? renderStartNpcNestedDialogue(ans.dialogue, key) : ''}
+                        </div>
+                    `).join('')}
+                </div>`;
+        }
+
+        function toggleStartNpcAnswerConditions(key) {
+            const answer = currentProject.startNpc.answers[key];
+            if (answer.conditions) {
+                delete answer.conditions;
+            } else {
+                answer.conditions = {};
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderStartNpcAnswerConditions(conditions, key) {
+            const condEntries = Object.entries(conditions);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">🔒 Conditions</span><button class="btn btn-xs" onclick="addStartNpcAnswerCondition('${key}')">➕</button></div>
+                    ${condEntries.map(([cKey, cond]) => {
+                        const typeInfo = DATA.conditionTypes.find(t => t.id === cond.type);
+                        return `
+                            <div class="item-card" style="padding: 0.3rem; margin-bottom: 0.2rem">
+                                <div class="compact-inline">
+                                    <span class="item-type-badge">${typeInfo?.icon || '🔒'}</span>
+                                    <select class="form-control form-control-xs" onchange="updateStartNpcAnswerCondition('${key}', '${cKey}', 'type', this.value); renderEditor();">${DATA.conditionTypes.map(t => `<option value="${t.id}" ${cond.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                    <button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeStartNpcAnswerCondition('${key}', '${cKey}')">✕</button>
+                                </div>
+                                ${renderStartNpcConditionParams(cond, key, cKey)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderStartNpcConditionParams(cond, key, cKey) {
+            switch(cond.type) {
+                case 'QUEST_STATE':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.questId || '')}" oninput="updateStartNpcAnswerCondition('${key}', '${cKey}', 'questId', this.value)" placeholder="Quest ID">
+                            <select class="form-control form-control-xs" onchange="updateStartNpcAnswerCondition('${key}', '${cKey}', 'questState', this.value)">${DATA.questStates.map(s => `<option value="${s.id}" ${cond.questState === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}</select>
+                        </div>`;
+                case 'PLACEHOLDER':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.placeholder || '')}" oninput="updateStartNpcAnswerCondition('${key}', '${cKey}', 'placeholder', this.value)" placeholder="Placeholder">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.value || '')}" oninput="updateStartNpcAnswerCondition('${key}', '${cKey}', 'value', this.value)" placeholder="Valeur">
+                        </div>`;
+                case 'PERMISSION':
+                    return `<input class="form-control form-control-xs" style="margin-top:0.2rem" value="${escapeHtml(cond.permission || '')}" oninput="updateStartNpcAnswerCondition('${key}', '${cKey}', 'permission', this.value)" placeholder="Permission (ex: ma.permission)">`;
+                default:
+                    return '';
+            }
+        }
+
+        function addStartNpcAnswerCondition(key) {
+            const answer = currentProject.startNpc.answers[key];
+            if (!answer.conditions) answer.conditions = {};
+            const nextKey = Object.keys(answer.conditions).length + 1;
+            answer.conditions[nextKey] = { type: 'QUEST_STATE', questId: '', questState: 'COMPLETED' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateStartNpcAnswerCondition(key, cKey, field, value) {
+            currentProject.startNpc.answers[key].conditions[cKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeStartNpcAnswerCondition(key, cKey) {
+            delete currentProject.startNpc.answers[key].conditions[cKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderStartNpcNestedDialogue(dialogue, ansKey) {
+            const pages = dialogue.pages || {};
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">🎭 Dialogue</span><button class="btn btn-xs btn-ghost" onclick="removeStartNpcDialogue('${ansKey}')">✕</button></div>
+                    <select class="form-control form-control-xs" style="margin-bottom:0.3rem" oninput="updateStartNpcDialogue('${ansKey}', 'speaker', this.value)">${DATA.speakers.map(s => `<option value="${s}" ${dialogue.speaker === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+                    ${Object.entries(pages).map(([pageKey, page]) => `
+                        <div class="item-card" style="padding:0.3rem;margin-bottom:0.2rem">
+                            <div class="item-header"><span class="item-title">Page ${pageKey}</span><button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeStartNpcDialoguePage('${ansKey}', '${pageKey}')">✕</button></div>
+                            <textarea class="form-control form-control-xs" rows="2" oninput="updateStartNpcDialoguePageTexts('${ansKey}', '${pageKey}', this.value)">${(page.texts || []).join('\n')}</textarea>
+                            ${renderStartNpcDialoguePageAnswers(page.answers || {}, ansKey, pageKey)}
+                            <button class="btn btn-xs btn-ghost" style="margin-top:0.2rem" onclick="addStartNpcDialoguePageAnswer('${ansKey}', '${pageKey}')">➕ Réponse</button>
+                        </div>
+                    `).join('')}
+                    <button class="btn btn-xs btn-ghost" style="margin-top:0.2rem" onclick="addStartNpcDialoguePage('${ansKey}')">➕ Page</button>
+                </div>`;
+        }
+
+        function renderStartNpcDialoguePageAnswers(answers, ansKey, pageKey) {
+            const entries = Object.entries(answers);
+            return entries.length ? `
+                <div style="margin-top:0.3rem">
+                    ${entries.map(([aKey, a]) => `
+                        <div class="item-card" style="padding:0.3rem;margin-bottom:0.2rem">
+                            <div class="compact-inline">
+                                <input class="form-control form-control-xs" value="${escapeHtml(a.text || '')}" oninput="updateStartNpcDialoguePageAnswer('${ansKey}', '${pageKey}', '${aKey}', 'text', this.value)" placeholder="Texte" style="flex:1">
+                                ${a.goto !== undefined ? `<input class="form-control form-control-xs" value="${escapeHtml(a.goto)}" oninput="updateStartNpcDialoguePageAnswer('${ansKey}', '${pageKey}', '${aKey}', 'goto', this.value)" placeholder="Aller à">` : ''}
+                                ${a.accept ? `<span class="chip">✓</span>` : ''}
+                                ${a.next ? `<span class="chip">→</span>` : ''}
+                                ${a.conditions && Object.keys(a.conditions).length ? `<span class="chip">🔒 ${Object.keys(a.conditions).length}</span>` : ''}
+                                <button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeStartNpcDialoguePageAnswer('${ansKey}', '${pageKey}', '${aKey}')">✕</button>
+                            </div>
+                            <div class="compact-inline" style="margin-top:0.2rem">
+                                <button class="btn btn-xs ${a.goto !== undefined ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcPageAnswerOption('${ansKey}', '${pageKey}', '${aKey}', 'goto', ${a.goto === undefined})">${a.goto === undefined ? '➕ Goto' : '✕ Goto'}</button>
+                                <button class="btn btn-xs ${a.accept ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcPageAnswerOption('${ansKey}', '${pageKey}', '${aKey}', 'accept', ${a.accept === undefined})">${a.accept ? '✕ Accept' : '➕ Accept'}</button>
+                                <button class="btn btn-xs ${a.next ? 'btn-danger' : 'btn-ghost'}" onclick="toggleStartNpcPageAnswerOption('${ansKey}', '${pageKey}', '${aKey}', 'next', ${a.next === undefined})">${a.next ? '✕ Next' : '➕ Next'}</button>
+                                <button class="btn btn-xs btn-ghost" onclick="toggleStartNpcPageAnswerConditions('${ansKey}', '${pageKey}', '${aKey}')">${a.conditions ? '🔒 Conditions' : '➕ Conditions'}</button>
+                            </div>
+                            ${a.conditions ? renderStartNpcPageAnswerConditions(a.conditions, '${ansKey}', '${pageKey}', '${aKey}') : ''}
+                        </div>
+                    `).join('')}
+                </div>` : '';
+        }
+
+        function toggleStartNpcPageAnswerConditions(ansKey, pageKey, aKey) {
+            const answer = currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey];
+            if (answer.conditions) {
+                delete answer.conditions;
+            } else {
+                answer.conditions = {};
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderStartNpcPageAnswerConditions(conditions, ansKey, pageKey, aKey) {
+            const condEntries = Object.entries(conditions);
+            return `
+                <div class="nested-item" style="margin-top:0.2rem">
+                    <div class="item-header"><span class="item-title">🔒 Conditions</span><button class="btn btn-xs" onclick="addStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}')">➕</button></div>
+                    ${condEntries.map(([cKey, cond]) => {
+                        const typeInfo = DATA.conditionTypes.find(t => t.id === cond.type);
+                        return `
+                            <div class="item-card" style="padding: 0.3rem; margin-bottom: 0.2rem">
+                                <div class="compact-inline">
+                                    <span class="item-type-badge">${typeInfo?.icon || '🔒'}</span>
+                                    <select class="form-control form-control-xs" onchange="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'type', this.value); renderEditor();">${DATA.conditionTypes.map(t => `<option value="${t.id}" ${cond.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                    <button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}')">✕</button>
+                                </div>
+                                ${renderStartNpcPageConditionParams(cond, ansKey, pageKey, aKey, cKey)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderStartNpcPageConditionParams(cond, ansKey, pageKey, aKey, cKey) {
+            switch(cond.type) {
+                case 'QUEST_STATE':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.questId || '')}" oninput="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'questId', this.value)" placeholder="Quest ID">
+                            <select class="form-control form-control-xs" onchange="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'questState', this.value)">${DATA.questStates.map(s => `<option value="${s.id}" ${cond.questState === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}</select>
+                        </div>`;
+                case 'PLACEHOLDER':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.placeholder || '')}" oninput="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'placeholder', this.value)" placeholder="Placeholder">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.value || '')}" oninput="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'value', this.value)" placeholder="Valeur">
+                        </div>`;
+                case 'PERMISSION':
+                    return `<input class="form-control form-control-xs" style="margin-top:0.2rem" value="${escapeHtml(cond.permission || '')}" oninput="updateStartNpcPageAnswerCondition('${ansKey}', '${pageKey}', '${aKey}', '${cKey}', 'permission', this.value)" placeholder="Permission (ex: ma.permission)">`;
+                default:
+                    return '';
+            }
+        }
+
+        function addStartNpcPageAnswerCondition(ansKey, pageKey, aKey) {
+            const answer = currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey];
+            if (!answer.conditions) answer.conditions = {};
+            const nextKey = Object.keys(answer.conditions).length + 1;
+            answer.conditions[nextKey] = { type: 'QUEST_STATE', questId: '', questState: 'COMPLETED' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateStartNpcPageAnswerCondition(ansKey, pageKey, aKey, cKey, field, value) {
+            currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey].conditions[cKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeStartNpcPageAnswerCondition(ansKey, pageKey, aKey, cKey) {
+            delete currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey].conditions[cKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function toggleStartNpcPageAnswerOption(ansKey, pageKey, aKey, option, add) {
+            if (add) {
+                currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey][option] = true;
+            } else {
+                delete currentProject.startNpc.answers[ansKey].dialogue.pages[pageKey].answers[aKey][option];
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderDialogueEditor() {
+            const p = currentProject;
+            document.getElementById('editor').innerHTML = `
+                <div class="editor-header animate-in">
+                    <div class="editor-title"><h2>${escapeHtml(p.name || p.id)}</h2><span class="chip">${p.speaker || 'sao'}</span></div>
+                    <button class="btn btn-ghost btn-icon" onclick="deleteProject()">🗑️</button>
+                </div>
+                <div class="editor-content animate-in">
+                    <div class="section">
+                        <div class="section-header"><span class="section-title">📋 Informations</span></div>
+                        <div class="compact-inline">
+                            <div class="form-group compact"><label>ID</label><input class="form-control form-control-xs" value="${escapeHtml(p.id)}" oninput="updateField('id', this.value)"></div>
+                            <div class="form-group compact"><label>Nom NPC</label><input class="form-control form-control-xs" value="${escapeHtml(p.name || '')}" oninput="updateField('name', this.value)"></div>
+                            <div class="form-group compact"><label>SaoNPC ID</label><input class="form-control form-control-xs" value="${escapeHtml(p.saonpcId || '')}" oninput="updateField('saonpcId', this.value)"></div>
+                            <div class="form-group compact"><label>Speaker</label><select class="form-control form-control-xs" oninput="updateField('speaker', this.value)">${DATA.speakers.map(s => `<option value="${s}" ${p.speaker === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-header"><span class="section-title">📄 Pages</span><button class="btn btn-primary btn-xs" onclick="addDialoguePageMain()">➕ Ajouter</button></div>
+                        ${Object.entries(p.pages || {}).map(([key, page]) => `
+                            <div class="item-card">
+                                <div class="item-header"><span class="item-title">Page ${key}</span><button class="btn btn-ghost btn-square" onclick="removeDialoguePageMain('${key}')">✕</button></div>
+                                <div class="form-group"><label>Textes (une par ligne)</label><textarea class="form-control" rows="3" oninput="updateMainDialoguePageTexts('${key}', this.value)">${(page.texts || []).join('\n')}</textarea></div>
+                                ${renderMainDialogueAnswers(page, key)}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function renderMainDialogueAnswers(page, pageKey) {
+            const answers = page.answers || {};
+            return `
+                <div class="form-group" style="margin-top: 0.4rem">
+                    <label>Réponses</label>
+                    ${Object.entries(answers).map(([ansKey, ans]) => `
+                        <div class="item-card" style="padding: 0.4rem; margin-bottom: 0.2rem">
+                            <div class="compact-inline">
+                                <input class="form-control form-control-sm" value="${escapeHtml(ans.text || '')}" oninput="updateMainDialogueAnswer('${pageKey}', '${ansKey}', 'text', this.value)" placeholder="Texte" style="flex:1">
+                                ${ans.goto ? `<input class="form-control form-control-sm" value="${escapeHtml(ans.goto)}" oninput="updateMainDialogueAnswer('${pageKey}', '${ansKey}', 'goto', this.value)" placeholder="Aller à">` : ''}
+                                ${ans.conditions && Object.keys(ans.conditions).length ? `<span class="chip">🔒 ${Object.keys(ans.conditions).length}</span>` : ''}
+                                <button class="btn btn-ghost btn-square" style="width:24px;height:24px" onclick="removeMainDialogueAnswer('${pageKey}', '${ansKey}')">✕</button>
+                            </div>
+                            <div class="compact-inline" style="margin-top:0.2rem">
+                                <button class="btn btn-xs ${ans.goto !== undefined ? 'btn-danger' : 'btn-ghost'}" onclick="toggleMainDialogueAnswerOption('${pageKey}', '${ansKey}', 'goto', ${ans.goto === undefined})">${ans.goto === undefined ? '➕ Goto' : '✕ Goto'}</button>
+                                <button class="btn btn-xs btn-ghost" onclick="toggleMainDialogueAnswerConditions('${pageKey}', '${ansKey}')">${ans.conditions ? '🔒 Conditions' : '➕ Conditions'}</button>
+                            </div>
+                            ${ans.conditions ? renderMainDialogueAnswerConditions(ans.conditions, '${pageKey}', '${ansKey}') : ''}
+                        </div>
+                    `).join('')}
+                    <button class="btn btn-xs btn-ghost" onclick="addMainDialogueAnswer('${pageKey}')">➕ Réponse</button>
+                </div>`;
+        }
+
+        function toggleMainDialogueAnswerOption(pageKey, ansKey, option, add) {
+            if (add) {
+                currentProject.pages[pageKey].answers[ansKey][option] = '';
+            } else {
+                delete currentProject.pages[pageKey].answers[ansKey][option];
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function toggleMainDialogueAnswerConditions(pageKey, ansKey) {
+            const answer = currentProject.pages[pageKey].answers[ansKey];
+            if (answer.conditions) {
+                delete answer.conditions;
+            } else {
+                answer.conditions = {};
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function renderMainDialogueAnswerConditions(conditions, pageKey, ansKey) {
+            const condEntries = Object.entries(conditions);
+            return `
+                <div class="nested-item">
+                    <div class="item-header"><span class="item-title">🔒 Conditions</span><button class="btn btn-xs" onclick="addMainDialogueAnswerCondition('${pageKey}', '${ansKey}')">➕</button></div>
+                    ${condEntries.map(([cKey, cond]) => {
+                        const typeInfo = DATA.conditionTypes.find(t => t.id === cond.type);
+                        return `
+                            <div class="item-card" style="padding: 0.3rem; margin-bottom: 0.2rem">
+                                <div class="compact-inline">
+                                    <span class="item-type-badge">${typeInfo?.icon || '🔒'}</span>
+                                    <select class="form-control form-control-xs" onchange="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'type', this.value); renderEditor();">${DATA.conditionTypes.map(t => `<option value="${t.id}" ${cond.type === t.id ? 'selected' : ''}>${t.icon} ${t.name}</option>`).join('')}</select>
+                                    <button class="btn btn-ghost btn-square" style="width:22px;height:22px" onclick="removeMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}')">✕</button>
+                                </div>
+                                ${renderMainDialogueConditionParams(cond, pageKey, ansKey, cKey)}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        function renderMainDialogueConditionParams(cond, pageKey, ansKey, cKey) {
+            switch(cond.type) {
+                case 'QUEST_STATE':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.questId || '')}" oninput="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'questId', this.value)" placeholder="Quest ID">
+                            <select class="form-control form-control-xs" onchange="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'questState', this.value)">${DATA.questStates.map(s => `<option value="${s.id}" ${cond.questState === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}</select>
+                        </div>`;
+                case 'PLACEHOLDER':
+                    return `
+                        <div class="compact-inline" style="margin-top:0.2rem">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.placeholder || '')}" oninput="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'placeholder', this.value)" placeholder="Placeholder">
+                            <input class="form-control form-control-xs" value="${escapeHtml(cond.value || '')}" oninput="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'value', this.value)" placeholder="Valeur">
+                        </div>`;
+                case 'PERMISSION':
+                    return `<input class="form-control form-control-xs" style="margin-top:0.2rem" value="${escapeHtml(cond.permission || '')}" oninput="updateMainDialogueAnswerCondition('${pageKey}', '${ansKey}', '${cKey}', 'permission', this.value)" placeholder="Permission (ex: ma.permission)">`;
+                default:
+                    return '';
+            }
+        }
+
+        function addMainDialogueAnswerCondition(pageKey, ansKey) {
+            const answer = currentProject.pages[pageKey].answers[ansKey];
+            if (!answer.conditions) answer.conditions = {};
+            const nextKey = Object.keys(answer.conditions).length + 1;
+            answer.conditions[nextKey] = { type: 'QUEST_STATE', questId: '', questState: 'COMPLETED' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateMainDialogueAnswerCondition(pageKey, ansKey, cKey, field, value) {
+            currentProject.pages[pageKey].answers[ansKey].conditions[cKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeMainDialogueAnswerCondition(pageKey, ansKey, cKey) {
+            delete currentProject.pages[pageKey].answers[ansKey].conditions[cKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function addObjective() {
+            const keys = Object.keys(currentProject.objectives || {});
+            const nextKey = keys.length > 0 ? String(Math.max(...keys.map(k => parseInt(k))) + 1) : '1';
+            if (!currentProject.objectives) currentProject.objectives = {};
+            currentProject.objectives[nextKey] = { type: 'TALK_NPC', target: 'npc_1', description: 'Parlez au PNJ' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateObjective(key, field, value) { currentProject.objectives[key][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function updateNestedObjective(objKey, nestedField, field, value) {
+            if (!currentProject.objectives[objKey][nestedField]) currentProject.objectives[objKey][nestedField] = {};
+            currentProject.objectives[objKey][nestedField][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeObjective(key) { delete currentProject.objectives[key]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function refreshObjectiveCard(key) { saveToStorage(); updateYamlPreview(); }
+
+        function enableMultiTargets(key) {
+            const obj = currentProject.objectives[key];
+            const targetType = { amount: obj.amount || 1 };
+            switch(obj.type) {
+                case 'TALK_NPC':
+                case 'KILL_MOB':
+                case 'KILL_MYTHICMOB': targetType.target = obj.target || ''; break;
+                case 'COLLECT_ITEM': targetType.itemId = obj.itemId || ''; break;
+                case 'SAOJOBS_COLLECT': targetType.resourceType = obj.resourceType || ''; break;
+            }
+            obj.targets = { '1': targetType };
+            delete obj.target;
+            delete obj.itemId;
+            delete obj.resourceType;
+            delete obj.amount;
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function disableMultiTargets(key) {
+            const obj = currentProject.objectives[key];
+            const firstTarget = Object.values(obj.targets)[0];
+            if (firstTarget) {
+                obj.amount = firstTarget.amount;
+                if (firstTarget.target) obj.target = firstTarget.target;
+                if (firstTarget.itemId) obj.itemId = firstTarget.itemId;
+                if (firstTarget.resourceType) obj.resourceType = firstTarget.resourceType;
+            }
+            delete obj.targets;
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function addTarget(key) {
+            const targets = currentProject.objectives[key].targets;
+            const keys = Object.keys(targets);
+            const nextKey = keys.length > 0 ? String(Math.max(...keys.map(k => parseInt(k))) + 1) : '1';
+            const obj = currentProject.objectives[key];
+            const newTarget = { amount: 1 };
+            switch(obj.type) {
+                case 'TALK_NPC':
+                case 'KILL_MOB':
+                case 'KILL_MYTHICMOB': newTarget.target = ''; break;
+                case 'COLLECT_ITEM': newTarget.itemId = ''; break;
+                case 'SAOJOBS_COLLECT': newTarget.resourceType = ''; break;
+            }
+            targets[nextKey] = newTarget;
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeTarget(objKey, targetKey) {
+            delete currentProject.objectives[objKey].targets[targetKey];
+            if (Object.keys(currentProject.objectives[objKey].targets).length === 0) {
+                disableMultiTargets(objKey);
+            } else {
+                saveToStorage();
+                renderEditor();
+                updateYamlPreview();
+            }
+        }
+
+        function updateTarget(objKey, targetKey, field, value) { currentProject.objectives[objKey].targets[targetKey][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        let currentAutocompleteKey = null;
+        let selectedAutocompleteIndex = -1;
+        let currentCursorPos = null;
+
+        function handleDescriptionInput(event, key, input) {
+            const value = input.value;
+            currentCursorPos = input.selectionStart;
+            const list = document.getElementById(`autocomplete-${key}`);
+            const lastOpenBrace = value.lastIndexOf('{', currentCursorPos);
+            if (lastOpenBrace === -1) { list.style.display = 'none'; return; }
+            const closeBrace = value.indexOf('}', lastOpenBrace);
+            if (closeBrace !== -1 && closeBrace < currentCursorPos) { list.style.display = 'none'; return; }
+            const search = value.substring(lastOpenBrace, currentCursorPos).toLowerCase();
+            let placeholders = [...DATA.placeholders];
+            const obj = currentProject.objectives[key];
+            if (obj.targets) {
+                Object.keys(obj.targets).forEach(tKey => {
+                    const num = parseInt(tKey);
+                    if (num > 1) {
+                        placeholders.push({ code: `{current_amount_${num}}`, desc: `Qty actuelle target ${num}` });
+                        placeholders.push({ code: `{target_${num}}`, desc: `Cible target ${num}` });
+                    }
+                });
+            }
+            const matches = placeholders.filter(p => p.code.toLowerCase().startsWith(search));
+            if (matches.length === 0) { list.style.display = 'none'; return; }
+            currentAutocompleteKey = key;
+            selectedAutocompleteIndex = -1;
+            list.innerHTML = matches.map(p => `<div class="autocomplete-item" onclick="selectPlaceholder('${key}', '${p.code.replace(/'/g, "\\'")}', ${lastOpenBrace})"><span class="autocomplete-item-code">${p.code}</span><span class="autocomplete-item-desc">${p.desc}</span></div>`).join('');
+            list.style.display = 'block';
+            list.style.position = 'absolute';
+            list.style.top = (input.offsetTop + input.offsetHeight + 4) + 'px';
+            list.style.left = input.offsetLeft + 'px';
+            list.style.width = Math.max(input.offsetWidth, 200) + 'px';
+        }
+
+        function handleDescriptionKeydown(event, key, input) {
+            const list = document.getElementById(`autocomplete-${key}`);
+            if (list.style.display === 'none') return;
+            const items = list.querySelectorAll('.autocomplete-item');
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, items.length - 1);
+                updateSelectedAutocomplete(items);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, 0);
+                updateSelectedAutocomplete(items);
+            } else if (event.key === 'Enter' || event.key === 'Tab') {
+                if (selectedAutocompleteIndex >= 0) {
+                    event.preventDefault();
+                    const selectedItem = items[selectedAutocompleteIndex];
+                    const placeholderCode = selectedItem.querySelector('.autocomplete-item-code').textContent;
+                    const value = input.value;
+                    const cursorPos = input.selectionStart;
+                    const lastOpenBrace = value.lastIndexOf('{', cursorPos);
+                    insertPlaceholder(key, placeholderCode, lastOpenBrace, cursorPos);
+                }
+            } else if (event.key === 'Escape') {
+                list.style.display = 'none';
+                selectedAutocompleteIndex = -1;
+            }
+        }
+
+        function updateSelectedAutocomplete(items) {
+            items.forEach((item, i) => {
+                if (i === selectedAutocompleteIndex) { item.style.background = 'var(--primary)'; item.style.color = 'white'; }
+                else { item.style.background = ''; item.style.color = ''; }
+            });
+        }
+
+        function selectPlaceholder(key, placeholder, startPos) { insertPlaceholder(key, placeholder, startPos, currentCursorPos); }
+
+        function insertPlaceholder(key, placeholder, startPos, endPos = null) {
+            const obj = currentProject.objectives[key];
+            const currentValue = obj.description || '';
+            const before = currentValue.substring(0, startPos);
+            const cursorPos = endPos || startPos + placeholder.length;
+            const afterStart = currentValue.substring(startPos);
+            const closeBraceIndex = afterStart.indexOf('}');
+            const partialEnd = closeBraceIndex !== -1 && closeBraceIndex < (cursorPos - startPos) ? closeBraceIndex + 1 : (cursorPos - startPos);
+            const after = currentValue.substring(startPos + partialEnd);
+            obj.description = before + placeholder + after;
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+            const newCursorPos = startPos + placeholder.length;
+            setTimeout(() => {
+                const input = document.getElementById(`desc-${key}`);
+                if (input) { input.focus(); input.setSelectionRange(newCursorPos, newCursorPos); }
+            }, 10);
+        }
+
+        document.addEventListener('click', (e) => { if (!e.target.closest('.form-group')) document.querySelectorAll('.autocomplete-list').forEach(list => list.style.display = 'none'); });
+
+        function removeInformations(key) { delete currentProject.objectives[key].informations; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function addObjectiveAnswer(objKey) {
+            const answers = currentProject.objectives[objKey].answers || {};
+            const nextKey = Object.keys(answers).length + 1;
+            if (!currentProject.objectives[objKey].answers) currentProject.objectives[objKey].answers = {};
+            currentProject.objectives[objKey].answers[nextKey] = { text: 'Nouvelle réponse' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateObjectiveAnswer(objKey, ansKey, field, value) { currentProject.objectives[objKey].answers[ansKey][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removeObjectiveAnswer(objKey, ansKey) { delete currentProject.objectives[objKey].answers[ansKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function toggleAnswerOption(objKey, ansKey, option, add) {
+            if (add) {
+                currentProject.objectives[objKey].answers[ansKey][option] = true;
+            } else {
+                delete currentProject.objectives[objKey].answers[ansKey][option];
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeNestedDialogue(objKey, ansKey) { delete currentProject.objectives[objKey].answers[ansKey].dialogue; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateNestedDialogue(objKey, ansKey, field, value) { currentProject.objectives[objKey].answers[ansKey].dialogue[field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function addDialoguePage(objKey, ansKey) {
+            const pages = currentProject.objectives[objKey].answers[ansKey].dialogue.pages;
+            const nextKey = Object.keys(pages).length + 1;
+            pages[nextKey] = { texts: ['Nouvelle page'], answers: {} };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeDialoguePage(objKey, ansKey, pageKey) { delete currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateDialoguePageTexts(objKey, ansKey, pageKey, value) { currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].texts = value.split('\n').filter(t => t.trim()); saveToStorage(); updateYamlPreview(); }
+
+        function addPageAnswer(objKey, ansKey, pageKey) {
+            const answers = currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers || {};
+            const nextKey = Object.keys(answers).length + 1;
+            if (!currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers) currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers = {};
+            currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[nextKey] = { text: 'Réponse' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updatePageAnswer(objKey, ansKey, pageKey, aKey, field, value) { currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removePageAnswer(objKey, ansKey, pageKey, aKey) { delete currentProject.objectives[objKey].answers[ansKey].dialogue.pages[pageKey].answers[aKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function addAnswerAction(objKey, ansKey) {
+            const actions = currentProject.objectives[objKey].answers[ansKey].actions || {};
+            const nextKey = Object.keys(actions).length + 1;
+            if (!currentProject.objectives[objKey].answers[ansKey].actions) currentProject.objectives[objKey].answers[ansKey].actions = {};
+            currentProject.objectives[objKey].answers[ansKey].actions[nextKey] = { type: 'EXECUTE_COMMAND', command: '' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateAnswerAction(objKey, ansKey, actKey, field, value) { currentProject.objectives[objKey].answers[ansKey].actions[actKey][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removeAnswerAction(objKey, ansKey, actKey) { delete currentProject.objectives[objKey].answers[ansKey].actions[actKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function addReward() {
+            const rewards = currentProject.rewards || {};
+            const nextKey = Object.keys(rewards).length + 1;
+            if (!currentProject.rewards) currentProject.rewards = {};
+            currentProject.rewards[nextKey] = { type: 'MONEY', amount: 100 };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateReward(key, field, value) { currentProject.rewards[key][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removeReward(key) { delete currentProject.rewards[key]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateRequirementsArray(field, value) {
+            if (!currentProject.requirements) currentProject.requirements = {};
+            currentProject.requirements[field] = value ? value.split(',').map(v => v.trim()).filter(v => v) : [];
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function updateRequirementsLevel(value) {
+            if (!currentProject.requirements) currentProject.requirements = {};
+            currentProject.requirements.mmocore_level = value ? parseInt(value) : null;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function addStartNpc() { currentProject.startNpc = { enable: true, npcId: '', answers: {} }; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function removeStartNpc() { delete currentProject.startNpc; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function addStartNpcAnswer() {
+            const answers = currentProject.startNpc.answers || {};
+            const nextKey = Object.keys(answers).length + 1;
+            if (!currentProject.startNpc.answers) currentProject.startNpc.answers = {};
+            currentProject.startNpc.answers[nextKey] = { text: 'Nouvelle réponse' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateStartNpcAnswer(key, field, value) { currentProject.startNpc.answers[key][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removeStartNpcAnswer(key) { delete currentProject.startNpc.answers[key]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function toggleStartNpcAnswerOption(key, option, add) {
+            if (add) {
+                currentProject.startNpc.answers[key][option] = true;
+            } else {
+                delete currentProject.startNpc.answers[key][option];
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function toggleStartNpcDialogue(key) {
+            if (currentProject.startNpc.answers[key].dialogue) {
+                delete currentProject.startNpc.answers[key].dialogue;
+            } else {
+                currentProject.startNpc.answers[key].dialogue = { speaker: 'sao', pages: { 1: { texts: ['Nouvelle page'], answers: {} } } };
+            }
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeStartNpcDialogue(key) { delete currentProject.startNpc.answers[key].dialogue; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateStartNpcDialogue(key, field, value) { currentProject.startNpc.answers[key].dialogue[field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function addStartNpcDialoguePage(key) {
+            const pages = currentProject.startNpc.answers[key].dialogue.pages;
+            const nextKey = Object.keys(pages).length + 1;
+            pages[nextKey] = { texts: ['Nouvelle page'], answers: {} };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeStartNpcDialoguePage(key, pageKey) { delete currentProject.startNpc.answers[key].dialogue.pages[pageKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateStartNpcDialoguePageTexts(key, pageKey, value) {
+            currentProject.startNpc.answers[key].dialogue.pages[pageKey].texts = value.split('\n').filter(t => t.trim());
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function addStartNpcDialoguePageAnswer(key, pageKey) {
+            const answers = currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers || {};
+            const nextKey = Object.keys(answers).length + 1;
+            if (!currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers) currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers = {};
+            currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers[nextKey] = { text: 'Réponse' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateStartNpcDialoguePageAnswer(key, pageKey, aKey, field, value) {
+            currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers[aKey][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function removeStartNpcDialoguePageAnswer(key, pageKey, aKey) {
+            delete currentProject.startNpc.answers[key].dialogue.pages[pageKey].answers[aKey];
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function addDialoguePageMain() {
+            const pages = currentProject.pages || {};
+            const nextKey = Object.keys(pages).length + 1;
+            if (!currentProject.pages) currentProject.pages = {};
+            currentProject.pages[nextKey] = { texts: ['Nouvelle page'], answers: {} };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function removeDialoguePageMain(key) { delete currentProject.pages[key]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateMainDialoguePageTexts(key, value) { currentProject.pages[key].texts = value.split('\n').filter(t => t.trim()); saveToStorage(); updateYamlPreview(); }
+
+        function addMainDialogueAnswer(pageKey) {
+            const answers = currentProject.pages[pageKey].answers || {};
+            const nextKey = Object.keys(answers).length + 1;
+            if (!currentProject.pages[pageKey].answers) currentProject.pages[pageKey].answers = {};
+            currentProject.pages[pageKey].answers[nextKey] = { text: 'Réponse' };
+            saveToStorage();
+            renderEditor();
+            updateYamlPreview();
+        }
+
+        function updateMainDialogueAnswer(pageKey, ansKey, field, value) { currentProject.pages[pageKey].answers[ansKey][field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function removeMainDialogueAnswer(pageKey, ansKey) { delete currentProject.pages[pageKey].answers[ansKey]; saveToStorage(); renderEditor(); updateYamlPreview(); }
+
+        function updateField(field, value) { currentProject[field] = value; saveToStorage(); updateYamlPreview(); }
+
+        function updateNested(parent, field, value) {
+            if (!currentProject[parent]) currentProject[parent] = {};
+            currentProject[parent][field] = value;
+            saveToStorage();
+            updateYamlPreview();
+        }
+
+        function updateDescription(value) { currentProject.description = value.split('\n').filter(v => v.trim()); saveToStorage(); updateYamlPreview(); }
+
+        function updateYamlPreview() {
+            if (!currentProject) { document.getElementById('yamlOutput').textContent = ''; return; }
+            const yaml = currentType === 'quests' ? generateQuestYaml(currentProject) : generateDialogueYaml(currentProject);
+            document.getElementById('yamlOutput').textContent = yaml;
+        }
+
+        function generateQuestYaml(quest) {
+            let yaml = `name: "${escapeYaml(quest.name)}"\n`;
+            yaml += `description:\n`;
+            (quest.description || ['']).forEach(d => yaml += `  - "${escapeYaml(d)}"\n`);
+            yaml += `category: "${quest.category || 'principale'}"\n`;
+            if (quest.region) yaml += `region: "${escapeYaml(quest.region)}"\n`;
+            if (quest.levelRequired) yaml += `level_required: ${quest.levelRequired}\n`;
+            yaml += `auto_track: ${quest.autoTrack !== false}\n`;
+            yaml += `auto_start: ${quest.autoStart === true}\n`;
+            yaml += `repeatable: ${quest.repeatable === true}\n`;
+            if (quest.requirements && Object.keys(quest.requirements).length) {
+                yaml += `\nrequirements:\n`;
+                if (quest.requirements.mmocore_level || quest.requirements.mmocoreLevel || quest.requirements.saocore_level || quest.requirements.saoCoreLevel) yaml += `  mmocore_level: ${quest.requirements.mmocore_level || quest.requirements.mmocoreLevel || quest.requirements.saocore_level || quest.requirements.saoCoreLevel || 0}\n`;
+                if (quest.requirements.quests?.length) { yaml += `  quests:\n`; quest.requirements.quests.forEach(q => yaml += `    - "${escapeYaml(q)}"\n`); }
+                if (quest.requirements.permissions?.length) { yaml += `  permissions:\n`; quest.requirements.permissions.forEach(p => yaml += `    - "${escapeYaml(p)}"\n`); }
+            }
+            if (quest.startNpc) {
+                yaml += `\nstart_npc:\n`;
+                yaml += `  enable: ${quest.startNpc.enable !== false}\n`;
+                yaml += `  npc_id: "${escapeYaml(quest.startNpc.npcId || '')}"\n`;
+                if (quest.startNpc.answers && Object.keys(quest.startNpc.answers).length) {
+                    yaml += `  answers:\n`;
+                    Object.entries(quest.startNpc.answers).forEach(([key, ans]) => {
+                        yaml += `    "${key}":\n`;
+                        yaml += `      text: "${escapeYaml(ans.text || '')}"\n`;
+                        if (ans.conditions && Object.keys(ans.conditions).length) {
+                            yaml += `      conditions:\n`;
+                            Object.entries(ans.conditions).forEach(([cKey, cond]) => {
+                                yaml += `        "${cKey}":\n`;
+                                yaml += `          type: ${cond.type}\n`;
+                                if (cond.type === 'QUEST_STATE') {
+                                    yaml += `          quest_id: "${escapeYaml(cond.questId || '')}"\n`;
+                                    yaml += `          quest_state: ${cond.questState || 'COMPLETED'}\n`;
+                                }
+                                if (cond.type === 'PLACEHOLDER') {
+                                    yaml += `          placeholder: "${escapeYaml(cond.placeholder || '')}"\n`;
+                                    yaml += `          value: "${escapeYaml(cond.value || '')}"\n`;
+                                }
+                                if (cond.type === 'PERMISSION') {
+                                    yaml += `          permission: "${escapeYaml(cond.permission || '')}"\n`;
+                                }
+                            });
+                        }
+                        if (ans.dialogue) yaml += generateNestedDialogueYaml(ans.dialogue, '      ');
+                        if (ans.accept) yaml += `      accept: true\n`;
+                        if (ans.next) yaml += `      next: true\n`;
+                        if (ans.actions) {
+                            yaml += `      actions:\n`;
+                            Object.entries(ans.actions).forEach(([actKey, act]) => {
+                                yaml += `        "${actKey}":\n`;
+                                yaml += `          type: ${act.type}\n`;
+                                if (act.command) yaml += `          command: "${escapeYaml(act.command)}"\n`;
+                                if (act.questId) yaml += `          quest_id: "${escapeYaml(act.questId)}"\n`;
+                                if (act.objectiveId) yaml += `          objective_id: "${escapeYaml(act.objectiveId)}"\n`;
+                                if (act.message) yaml += `          message: "${escapeYaml(act.message)}"\n`;
+                                if (act.dialogueId) yaml += `          dialogue_id: "${escapeYaml(act.dialogueId)}"\n`;
+                                if (act.pageId) yaml += `          page_id: "${escapeYaml(act.pageId)}"\n`;
+                                if (act.asConsole !== undefined) yaml += `          as_console: ${act.asConsole}\n`;
+                            });
+                        }
+                    });
+                }
+            }
+            if (quest.objectives && Object.keys(quest.objectives).length) {
+                yaml += `\nobjectives:\n`;
+                Object.entries(quest.objectives).forEach(([key, obj]) => {
+                    yaml += `  "${key}":\n`;
+                    if (obj.id) yaml += `    id: "${escapeYaml(obj.id)}"\n`;
+                    if (obj.informations) { yaml += `    informations:\n`; if (obj.informations.region) yaml += `      region: "${escapeYaml(obj.informations.region)}"\n`; if (obj.informations.floor) yaml += `      floor: ${obj.informations.floor}\n`; }
+                    yaml += `    type: ${obj.type}\n`;
+                    if (obj.description) yaml += `    description: "${escapeYaml(obj.description)}"\n`;
+                    if (obj.targets) {
+                        yaml += `    targets:\n`;
+                        Object.entries(obj.targets).forEach(([tKey, target]) => {
+                            yaml += `      "${tKey}":\n`;
+                            if (target.target) yaml += `        target: "${escapeYaml(target.target)}"\n`;
+                            if (target.itemId) yaml += `        item_id: "${escapeYaml(target.itemId)}"\n`;
+                            if (target.resourceType) yaml += `        resource_type: "${escapeYaml(target.resourceType)}"\n`;
+                            yaml += `        amount: ${target.amount || 1}\n`;
+                        });
+                    } else {
+                        if (obj.target) yaml += `    target: "${escapeYaml(obj.target)}"\n`;
+                        if (obj.itemId) yaml += `    item_id: "${escapeYaml(obj.itemId)}"\n`;
+                        if (obj.mob_id) yaml += `    mob_id: "${escapeYaml(obj.mob_id)}"\n`;
+                        if (obj.material) yaml += `    material: "${escapeYaml(obj.material)}"\n`;
+                        if (obj.resourceType) yaml += `    resource_type: "${escapeYaml(obj.resourceType)}"\n`;
+                        if (obj.customType) yaml += `    custom_type: "${escapeYaml(obj.customType)}"\n`;
+                        if (obj.amount) yaml += `    amount: ${obj.amount}\n`;
+                    }
+                    if (obj.radius) yaml += `    radius: ${obj.radius}\n`;
+                    if (obj.location) { yaml += `    location:\n`; yaml += `      world: "${escapeYaml(obj.location.world || 'world')}"\n`; if (obj.location.x !== undefined) yaml += `      x: ${obj.location.x}\n`; if (obj.location.y !== undefined) yaml += `      y: ${obj.location.y}\n`; if (obj.location.z !== undefined) yaml += `      z: ${obj.location.z}\n`; }
+                    if (obj.answers) {
+                        yaml += `    answers:\n`;
+                        Object.entries(obj.answers).forEach(([ansKey, ans]) => {
+                            yaml += `      "${ansKey}":\n`;
+                            yaml += `        text: "${escapeYaml(ans.text || '')}"\n`;
+                            if (ans.accept) yaml += `        accept: true\n`;
+                            if (ans.next) yaml += `        next: true\n`;
+                            if (ans.conditions && Object.keys(ans.conditions).length) {
+                                yaml += `        conditions:\n`;
+                                Object.entries(ans.conditions).forEach(([cKey, cond]) => {
+                                    yaml += `          "${cKey}":\n`;
+                                    yaml += `            type: ${cond.type}\n`;
+                                    if (cond.type === 'QUEST_STATE') {
+                                        yaml += `            quest_id: "${escapeYaml(cond.questId || '')}"\n`;
+                                        yaml += `            quest_state: ${cond.questState || 'COMPLETED'}\n`;
+                                    }
+                                    if (cond.type === 'PLACEHOLDER') {
+                                        yaml += `            placeholder: "${escapeYaml(cond.placeholder || '')}"\n`;
+                                        yaml += `            value: "${escapeYaml(cond.value || '')}"\n`;
+                                    }
+                                    if (cond.type === 'PERMISSION') {
+                                        yaml += `            permission: "${escapeYaml(cond.permission || '')}"\n`;
+                                    }
+                                });
+                            }
+                            if (ans.dialogue) yaml += generateNestedDialogueYaml(ans.dialogue, '        ');
+                            if (ans.actions) {
+                                yaml += `        actions:\n`;
+                                Object.entries(ans.actions).forEach(([actKey, act]) => {
+                                    yaml += `          "${actKey}":\n`;
+                                    yaml += `            type: ${act.type}\n`;
+                                    if (act.command) yaml += `            command: "${escapeYaml(act.command)}"\n`;
+                                    if (act.questId) yaml += `            quest_id: "${escapeYaml(act.questId)}"\n`;
+                                    if (act.objectiveId) yaml += `            objective_id: "${escapeYaml(act.objectiveId)}"\n`;
+                                    if (act.message) yaml += `            message: "${escapeYaml(act.message)}"\n`;
+                                    if (act.dialogueId) yaml += `            dialogue_id: "${escapeYaml(act.dialogueId)}"\n`;
+                                    if (act.pageId) yaml += `            page_id: "${escapeYaml(act.pageId)}"\n`;
+                                    if (act.asConsole !== undefined) yaml += `            as_console: ${act.asConsole}\n`;
+                                });
+                            }
+                        });
+                    }
+                    if (obj.rewards && Object.keys(obj.rewards).length) {
+                        yaml += `    rewards:\n`;
+                        Object.entries(obj.rewards).forEach(([rKey, reward]) => {
+                            yaml += `      "${rKey}":\n`;
+                            yaml += `        type: ${reward.type}\n`;
+                            if (reward.command) yaml += `        command: "${escapeYaml(reward.command)}"\n`;
+                            if (reward.amount) yaml += `        amount: ${reward.amount}\n`;
+                            if (reward.experience) yaml += `        experience: ${reward.experience}\n`;
+                            if (reward.type === 'SAOITEMS' && reward.target) yaml += `        target: "${escapeYaml(reward.target)}"\n`;
+                            else if (reward.type === 'SAOITEMS' && reward.itemId) yaml += `        target: "${escapeYaml(reward.itemId)}"\n`;
+                            else if (reward.itemId) yaml += `        item_id: "${escapeYaml(reward.itemId)}"\n`;
+                            if (reward.type === 'GIVE_QUEST' && reward.target) yaml += `        target: "${escapeYaml(reward.target)}"\n`;
+                            else if (reward.type === 'GIVE_QUEST' && reward.questId) yaml += `        target: "${escapeYaml(reward.questId)}"\n`;
+                            else if (reward.questId) yaml += `        quest_id: "${escapeYaml(reward.questId)}"\n`;
+                        });
+                    }
+                });
+            }
+            if (quest.rewards && Object.keys(quest.rewards).length) {
+                yaml += `\nrewards:\n`;
+                Object.entries(quest.rewards).forEach(([key, reward]) => {
+                    yaml += `  "${key}":\n`;
+                    yaml += `    type: ${reward.type}\n`;
+                    if (reward.command) yaml += `    command: "${escapeYaml(reward.command)}"\n`;
+                    if (reward.amount) yaml += `    amount: ${reward.amount}\n`;
+                    if (reward.experience) yaml += `    experience: ${reward.experience}\n`;
+                    if (reward.type === 'SAOITEMS' && reward.target) yaml += `    target: "${escapeYaml(reward.target)}"\n`;
+                    else if (reward.type === 'SAOITEMS' && reward.itemId) yaml += `    target: "${escapeYaml(reward.itemId)}"\n`;
+                    else if (reward.itemId) yaml += `    item_id: "${escapeYaml(reward.itemId)}"\n`;
+                    if (reward.type === 'GIVE_QUEST' && reward.target) yaml += `    target: "${escapeYaml(reward.target)}"\n`;
+                    else if (reward.type === 'GIVE_QUEST' && reward.questId) yaml += `    target: "${escapeYaml(reward.questId)}"\n`;
+                    else if (reward.questId) yaml += `    quest_id: "${escapeYaml(reward.questId)}"\n`;
+                });
+            }
+            return yaml;
+        }
+
+        function generateNestedDialogueYaml(dialogue, indent = '') {
+            let yaml = `${indent}dialogue:\n`;
+            yaml += `${indent}  speaker: ${dialogue.speaker || 'sao'}\n`;
+            yaml += `${indent}  pages:\n`;
+            Object.entries(dialogue.pages || {}).forEach(([key, page]) => {
+                yaml += `${indent}    "${key}":\n`;
+                yaml += `${indent}      texts:\n`;
+                (page.texts || []).forEach(t => yaml += `${indent}        - "${escapeYaml(t)}"\n`);
+                if (page.answers && Object.keys(page.answers).length) {
+                    yaml += `${indent}      answers:\n`;
+                    Object.entries(page.answers).forEach(([ansKey, ans]) => {
+                        yaml += `${indent}        "${ansKey}":\n`;
+                        yaml += `${indent}          text: "${escapeYaml(ans.text || '')}"\n`;
+                        if (ans.goto) yaml += `${indent}          goto: "${escapeYaml(ans.goto)}"\n`;
+                        if (ans.accept) yaml += `${indent}          accept: true\n`;
+                        if (ans.next) yaml += `${indent}          next: true\n`;
+                        if (ans.conditions && Object.keys(ans.conditions).length) {
+                            yaml += `${indent}          conditions:\n`;
+                            Object.entries(ans.conditions).forEach(([cKey, cond]) => {
+                                yaml += `${indent}            "${cKey}":\n`;
+                                yaml += `${indent}              type: ${cond.type}\n`;
+                                if (cond.type === 'QUEST_STATE') {
+                                    yaml += `${indent}              quest_id: "${escapeYaml(cond.questId || '')}"\n`;
+                                    yaml += `${indent}              quest_state: ${cond.questState || 'COMPLETED'}\n`;
+                                }
+                                if (cond.type === 'PLACEHOLDER') {
+                                    yaml += `${indent}              placeholder: "${escapeYaml(cond.placeholder || '')}"\n`;
+                                    yaml += `${indent}              value: "${escapeYaml(cond.value || '')}"\n`;
+                                }
+                                if (cond.type === 'PERMISSION') {
+                                    yaml += `${indent}              permission: "${escapeYaml(cond.permission || '')}"\n`;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            return yaml;
+        }
+
+        function generateDialogueYaml(dialogue) {
+            let yaml = `speaker: ${dialogue.speaker || 'sao'}\n`;
+            if (dialogue.name) yaml += `name: "${escapeYaml(dialogue.name)}"\n`;
+            if (dialogue.saonpcId) yaml += `saonpc_id: "${escapeYaml(dialogue.saonpcId)}"\n`;
+            yaml += `\npages:\n`;
+            Object.entries(dialogue.pages || {}).forEach(([key, page]) => {
+                yaml += `  "${key}":\n`;
+                yaml += `    texts:\n`;
+                (page.texts || []).forEach(t => yaml += `      - "${escapeYaml(t)}"\n`);
+                if (page.answers && Object.keys(page.answers).length) {
+                    yaml += `    answers:\n`;
+                    Object.entries(page.answers).forEach(([ansKey, ans]) => {
+                        yaml += `      "${ansKey}":\n`;
+                        yaml += `        text: "${escapeYaml(ans.text || '')}"\n`;
+                        if (ans.goto) yaml += `        goto: "${escapeYaml(ans.goto)}"\n`;
+                        if (ans.conditions && Object.keys(ans.conditions).length) {
+                            yaml += `        conditions:\n`;
+                            Object.entries(ans.conditions).forEach(([cKey, cond]) => {
+                                yaml += `          "${cKey}":\n`;
+                                yaml += `            type: ${cond.type}\n`;
+                                if (cond.type === 'QUEST_STATE') {
+                                    yaml += `            quest_id: "${escapeYaml(cond.questId || '')}"\n`;
+                                    yaml += `            quest_state: ${cond.questState || 'COMPLETED'}\n`;
+                                }
+                                if (cond.type === 'PLACEHOLDER') {
+                                    yaml += `            placeholder: "${escapeYaml(cond.placeholder || '')}"\n`;
+                                    yaml += `            value: "${escapeYaml(cond.value || '')}"\n`;
+                                }
+                                if (cond.type === 'PERMISSION') {
+                                    yaml += `            permission: "${escapeYaml(cond.permission || '')}"\n`;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            return yaml;
+        }
+
+        function escapeHtml(text) { if (!text) return ''; return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        function escapeYaml(text) { if (!text) return ''; return String(text).replace(/"/g, '\\"').replace(/\n/g, '\\n'); }
+
+        function copyYaml() { const yaml = document.getElementById('yamlOutput').textContent; navigator.clipboard.writeText(yaml).then(() => { alert('YAML copié !'); }); }
+
+        function exportAll() {
+            projects.quests.forEach(quest => downloadFile(`${quest.id}.yml`, generateQuestYaml(quest)));
+            projects.dialogues.forEach(dialogue => downloadFile(`dialogue-${dialogue.saonpcId || dialogue.id}.yml`, generateDialogueYaml(dialogue)));
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFile() { document.getElementById('importModal').classList.add('active'); }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function processImport() {
+            const type = document.getElementById('importType').value;
+            const yaml = document.getElementById('importYaml').value;
+            if (!yaml.trim()) { alert('Veuillez coller du contenu YAML'); return; }
+            try {
+                const parsed = parseSimpleYaml(yaml);
+                if (type === 'quest') {
+                    const quest = { id: parsed.id || 'imported_quest', name: parsed.name || 'Quête importée', description: parsed.description || [''], category: parsed.category || 'principale', region: parsed.region, levelRequired: parsed.level_required, autoTrack: parsed.auto_track !== false, autoStart: parsed.auto_start === true, repeatable: parsed.repeatable === true, requirements: parsed.requirements || {}, startNpc: parsed.start_npc, objectives: parsed.objectives || {}, rewards: parsed.rewards || {} };
+                    projects.quests.push(quest);
+                } else {
+                    const dialogue = { id: parsed.id || 'imported_dialogue', speaker: parsed.speaker || 'sao', name: parsed.name, saonpcId: parsed.saonpc_id, pages: parsed.pages || {} };
+                    projects.dialogues.push(dialogue);
+                }
+                saveToStorage();
+                renderList();
+                closeModal('importModal');
+                document.getElementById('importYaml').value = '';
+                alert('Import réussi !');
+            } catch (e) { alert('Erreur lors de l\'import: ' + e.message); }
+        }
+
+        function parseSimpleYaml(yaml) {
+            const result = {};
+            const lines = yaml.split('\n');
+            let stack = [{ obj: result, indent: -1, isArray: false }];
+            for (let line of lines) {
+                if (!line.trim() || line.trim().startsWith('#')) continue;
+                const indent = line.search(/\S|$/);
+                const trimmed = line.trim();
+                while (stack.length > 1 && stack[stack.length - 1].indent >= indent) stack.pop();
+                const current = stack[stack.length - 1];
+                if (trimmed.startsWith('- ')) {
+                    const item = trimmed.substring(2);
+                    const dashIndent = indent;
+                    if (item.includes(':')) {
+                        const [key, ...valueParts] = item.split(':');
+                        const value = valueParts.join(':').trim();
+                        const newObj = {};
+                        if (value && !value.startsWith('"') && !value.startsWith("'")) newObj[key.replace(/"/g, '').replace(/'/g, '')] = parseValue(value);
+                        stack.push({ obj: newObj, indent: dashIndent, isArray: true, parentKey: key.replace(/"/g, '').replace(/'/g, '') });
+                    } else { stack[stack.length - 1].listItem = parseValue(item); }
+                } else if (trimmed.includes(':')) {
+                    const colonIndex = trimmed.indexOf(':');
+                    const key = trimmed.substring(0, colonIndex).replace(/"/g, '').replace(/'/g, '');
+                    const value = trimmed.substring(colonIndex + 1).trim();
+                    if (stack[stack.length - 1].isArray && stack[stack.length - 1].parentKey) {
+                        const parent = stack[stack.length - 2];
+                        if (!parent.obj[stack[stack.length - 1].parentKey]) parent.obj[stack[stack.length - 1].parentKey] = {};
+                        parent.obj[stack[stack.length - 1].parentKey][key] = value === '' ? {} : parseValue(value);
+                    } else { current.obj[key] = value === '' || value === '|' || value === '>' ? {} : parseValue(value); }
+                    if (value === '' || value === '|' || value === '>') stack.push({ obj: current.obj[key], indent, isArray: false });
+                }
+            }
+            return result;
+        }
+
+        function parseValue(value) {
+            value = value.trim().replace(/^["']|["']$/g, '');
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            if (!isNaN(value) && value !== '') return Number(value);
+            return value;
+        }
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { document.getElementById('importYaml').value = e.target.result; };
+            reader.readAsText(file);
+        }
+
+        init();
+    </script>
+</body>
+</html>
